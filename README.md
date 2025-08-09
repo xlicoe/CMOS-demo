@@ -1,2 +1,2 @@
 # CMOS-demo
-CMOS simulator
+CMOS simulator for ENR325
