@@ -6,11 +6,11 @@
     <title>CMOS Simulator v1.0</title>
 
     <!--
-        Project: CMOS Simulator v1.1
-        Generated with: Google Gemini (Version: Pro)
+        Project: CMOS Simulator v1.0
+        Generated with: Google Gemini (Version: 2.5 Pro, Reasoning, math & code)
         Reference: https://gemini.google.com/
-        Date of Final Version: August 10, 2025
-        Development History: This application was built iteratively over the course of 30 prompts,
+        Date of Final Version: August 9, 2025
+        Development History: This application was built iteratively over the course of 28 prompts,
         including feature additions, UI refinements, and bug fixes.
     -->
 
@@ -77,7 +77,7 @@
 
     <div class="w-full max-w-7xl h-[90vh] bg-gray-800 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col gap-4">
         <header class="text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v1.1</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v1.0</h1>
             <p class="text-gray-400 mt-1 text-sm md:text-base">Drag components, wire them up, and see the truth table update in real-time!</p>
         </header>
 
@@ -95,7 +95,7 @@
                         <span>Wire</span>
                     </button>
                     <button id="tool-delete" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                         <span>Delete</span>
                     </button>
                 </div>
@@ -206,8 +206,7 @@
         let clipboard = null;
 
         const colors = {
-            wireOff: '#4b5563', wireOn: '#22c55e', wireFloat: '#f59e0b', 
-            wireError: '#ef4444',
+            wireOff: '#4b5563', wireOn: '#22c55e', wireFloat: '#f59e0b', wireError: '#ef4444',
             text: '#e5e7eb', pmos: '#f43f5e', nmos: '#3b82f6',
             componentStroke: '#9ca3af', terminal: '#cbd5e1', terminalHighlight: '#60a5fa',
             joint: '#f59e0b', grid: '#374151', selection: 'rgba(96, 165, 250, 0.3)'
@@ -240,6 +239,7 @@
             }
             runSimulation();
             updateTruthTable();
+            draw();
             updateHistoryButtons();
         }
 
@@ -288,25 +288,13 @@
         }
 
         class Joint {
-            constructor(x, y, id = null, type = 'junction', manualState = STATE_FLOAT) {
+            constructor(x, y, id = null) {
                 this.id = id !== null ? id : state.nextId++;
                 this.x = snapToGrid(x);
                 this.y = snapToGrid(y);
-                this.radius = 10;
+                this.radius = 5;
                 this.net = null;
                 this.isSelected = false;
-                this.type = type;
-                this.manualState = manualState;
-            }
-            isInteractive() {
-                return this.type === 'probe';
-            }
-            toggle() {
-                if (!this.isInteractive()) return;
-                if (this.manualState === STATE_FLOAT) this.manualState = STATE_HIGH;
-                else if (this.manualState === STATE_HIGH) this.manualState = STATE_LOW;
-                else this.manualState = STATE_FLOAT;
-                updateCircuit();
             }
             draw() {
                 ctx.beginPath();
@@ -316,29 +304,6 @@
                 ctx.fillStyle = colorMap[netState];
                 ctx.fill();
 
-                if (this.type === 'pull-up' || this.type === 'pull-down') {
-                    ctx.strokeStyle = colors.text;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    if (this.type === 'pull-up') {
-                        ctx.moveTo(this.x, this.y + 4); ctx.lineTo(this.x, this.y - 4);
-                        ctx.lineTo(this.x - 3, this.y - 1); ctx.moveTo(this.x, this.y - 4);
-                        ctx.lineTo(this.x + 3, this.y - 1);
-                    } else { // down
-                        ctx.moveTo(this.x, this.y - 4); ctx.lineTo(this.x, this.y + 4);
-                        ctx.lineTo(this.x - 3, this.y + 1); ctx.moveTo(this.x, this.y + 4);
-                        ctx.lineTo(this.x + 3, this.y + 1);
-                    }
-                    ctx.stroke();
-                } else if (this.isInteractive()) {
-                    ctx.fillStyle = colors.text;
-                    ctx.font = 'bold 12px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    if (this.manualState === STATE_HIGH) ctx.fillText('H', this.x, this.y);
-                    else if (this.manualState === STATE_LOW) ctx.fillText('L', this.x, this.y);
-                }
-
                 if (this.isSelected) {
                     ctx.strokeStyle = colors.terminalHighlight;
                     ctx.lineWidth = 2;
@@ -346,7 +311,7 @@
                 }
             }
              isClicked(pos) {
-                return Math.hypot(pos.x - this.x, pos.y - this.y) < this.radius + 2;
+                return Math.hypot(pos.x - this.x, pos.y - this.y) < this.radius;
             }
         }
 
@@ -515,7 +480,6 @@
                 this.id = id;
                 this.points = new Set();
                 this.state = STATE_FLOAT;
-                this.lastDrivenTime = 0;
             }
         }
 
@@ -556,7 +520,7 @@
                 for (const net of nets) {
                     let hasHigh = false;
                     let hasLow = false;
-                    
+
                     for (const point of net.points) {
                         if (point instanceof Terminal) {
                             if (point.parent.type === 'vdd') hasHigh = true;
@@ -572,7 +536,7 @@
                                 if (!gateNet) continue;
 
                                 const gateState = gateNet.state;
-                                const isConducting = (trans.type === 'pmos' && gateState === STATE_LOW) || (trans.type === 'nmos' && gateState === STATE_HIGH);
+                                const isConducting = (trans.type === 'pmos' && gateState < STATE_HIGH) || (trans.type === 'nmos' && gateState === STATE_HIGH);
 
                                 if (isConducting) {
                                     const otherTerm = point.name === 'source' ? trans.terminals[1] : trans.terminals[0];
@@ -586,21 +550,11 @@
                         }
                     }
                     
-                    let newState = net.state;
+                    let newState = STATE_FLOAT;
                     if (hasLow) {
                         newState = STATE_LOW;
                     } else if (hasHigh) {
                         newState = STATE_HIGH;
-                    } else {
-                        newState = STATE_FLOAT;
-                    }
-                    
-                    if (newState === STATE_HIGH || newState === STATE_LOW) {
-                        net.lastDrivenTime = Date.now();
-                    }
-
-                    if ((net.state === STATE_FLOAT || net.state === STATE_ERROR) && (Date.now() - net.lastDrivenTime > 500)) {
-                        newState = STATE_LOW;
                     }
 
                     nextStates.set(net, newState);
@@ -677,18 +631,6 @@
             }
         }
 
-        function lerpColor(a, b, amount) { 
-            const ah = parseInt(a.replace(/#/g, ''), 16),
-                  ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
-                  bh = parseInt(b.replace(/#/g, ''), 16),
-                  br = bh >> 16, bg = bh >> 8 & 0xff, bb = bh & 0xff,
-                  rr = ar + amount * (br - ar),
-                  rg = ag + amount * (bg - ag),
-                  rb = ab + amount * (bb - ab);
-
-            return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
-        }
-
         function drawOrthogonalWire(p1, p2, color) {
             const midX = snapToGrid((p1.x + p2.x) / 2);
             ctx.beginPath();
@@ -709,19 +651,8 @@
             const colorMap = { [STATE_HIGH]: colors.wireOn, [STATE_LOW]: colors.wireOff, [STATE_FLOAT]: colors.wireFloat, [STATE_ERROR]: colors.wireError };
             
             state.wires.forEach(wire => {
-                const net = wire.start.net;
-                if (!net) {
-                    drawOrthogonalWire(wire.start, wire.end, colors.wireFloat);
-                    return;
-                }
-                
-                let color = colorMap[net.state];
-                if (net.state === STATE_FLOAT || net.state === STATE_ERROR) {
-                    const progress = Math.min((Date.now() - net.lastDrivenTime) / 500, 1);
-                    const startColor = net.state === STATE_ERROR ? colors.wireError : colors.wireFloat;
-                    color = lerpColor(startColor, colors.wireOff, progress);
-                }
-                drawOrthogonalWire(wire.start, wire.end, color);
+                const netState = wire.start.net ? wire.start.net.state : STATE_FLOAT;
+                drawOrthogonalWire(wire.start, wire.end, colorMap[netState]);
             });
 
             if (state.mode === 'wire' && state.wiringStartPoint) {
@@ -781,10 +712,6 @@
                 if (type === 'pmos' || type === 'nmos') newComp = new Transistor(type, pos.x, pos.y);
                 else if (type === 'input' || type === 'output') newComp = new IOComponent(type, pos.x, pos.y);
                 else if (type === 'vdd' || type === 'gnd') newComp = new PowerComponent(type, pos.x, pos.y);
-                else if (type === 'junction') {
-                    const newJoint = new Joint(pos.x, pos.y, null, 'junction');
-                    state.joints.push(newJoint);
-                }
                 if (newComp) state.components.push(newComp);
                 setMode('select');
                 updateCircuit();
@@ -794,7 +721,6 @@
             const allPoints = [...state.components.flatMap(c => c.terminals), ...state.joints];
             const point = getHoveredConnectable(allPoints, pos);
             const comp = state.components.find(c => c.isClicked(pos));
-            const joint = state.joints.find(j => j.isClicked(pos));
 
             if (state.mode === 'wire') {
                 if (point) {
@@ -805,12 +731,11 @@
                 state.dragStartY = pos.y;
                 state.dragging = true;
 
-                const item = comp || joint;
-                if (item) {
-                    if (!item.isSelected && !e.shiftKey) {
+                if (comp) {
+                    if (!comp.isSelected && !e.shiftKey) {
                         clearSelection();
                     }
-                    item.isSelected = !e.shiftKey || !item.isSelected;
+                    comp.isSelected = !e.shiftKey || !comp.isSelected;
                 } else {
                     if (!e.shiftKey) clearSelection();
                     state.selectionBox = { x: pos.x, y: pos.y, w: 0, h: 0 };
@@ -849,6 +774,7 @@
                 if (state.selectionBox) {
                     state.selectionBox.w = pos.x - state.dragStartX;
                     state.selectionBox.h = pos.y - state.dragStartY;
+                    draw();
                 } else {
                     const dx = snapToGrid(pos.x) - snapToGrid(state.dragStartX);
                     const dy = snapToGrid(pos.y) - snapToGrid(state.dragStartY);
@@ -860,8 +786,14 @@
 
                     state.dragStartX = snapToGrid(pos.x);
                     state.dragStartY = snapToGrid(pos.y);
+                    updateCircuit(false);
                 }
-            } 
+            } else {
+                canvas.classList.toggle('cursor-grab', state.mode === 'select' && !!state.components.find(c => c.isClicked(pos)));
+                const allPoints = [...state.components.flatMap(c => c.terminals), ...state.joints];
+                canvas.classList.toggle('cursor-crosshair', state.mode === 'wire' && !!getHoveredConnectable(allPoints, pos));
+                draw();
+            }
         });
 
         canvas.addEventListener('mouseup', (e) => {
@@ -884,12 +816,8 @@
                     });
                     state.selectionBox = null;
                     draw();
-                } else if (distMoved < 5 && selected.length === 1) {
-                    if (selected[0] instanceof IOComponent && selected[0].type === 'input') {
-                        selected[0].toggle();
-                    } else if (selected[0] instanceof Joint) {
-                        selected[0].toggle();
-                    }
+                } else if (distMoved < 5 && selected.length === 1 && selected[0] instanceof IOComponent && selected[0].type === 'input') {
+                    selected[0].toggle();
                 } else if (distMoved > 5) {
                     updateCircuit(); // Save move to history
                 }
@@ -937,6 +865,7 @@
              state.dragging = false;
              state.wiringStartPoint = null;
              state.selectionBox = null;
+             draw();
         });
 
         toolSelect.addEventListener('click', () => setMode('select'));
@@ -988,7 +917,7 @@
                     id: c.id, type: c.type, x: c.x, y: c.y, label: c.label || null, state: c.state,
                     terminals: c.terminals.map(t => ({ id: t.id, name: t.name, offsetX: t.offsetX, offsetY: t.offsetY }))
                 })),
-                joints: state.joints.map(j => ({ id: j.id, x: j.x, y: j.y, pull: j.pull, type: j.type, manualState: j.manualState })),
+                joints: state.joints.map(j => ({ id: j.id, x: j.x, y: j.y })),
                 wires: state.wires.map(w => ({ startId: w.start.id, endId: w.end.id })),
                 nextInputLabel: state.nextInputLabel,
                 nextId: state.nextId
@@ -1033,7 +962,7 @@
             });
 
             (stateData.joints || []).forEach(jData => {
-                const joint = new Joint(jData.x, jData.y, jData.id, jData.pull || jData.type, jData.manualState);
+                const joint = new Joint(jData.x, jData.y, jData.id);
                 state.joints.push(joint);
                 pointMap.set(joint.id, joint);
             });
@@ -1142,10 +1071,7 @@
                 joints: state.joints.filter(j => j.isSelected).map(j => ({
                     id: j.id,
                     x: j.x - center.x, 
-                    y: j.y - center.y,
-                    pull: j.pull,
-                    type: j.type,
-                    manualState: j.manualState
+                    y: j.y - center.y
                 })),
                 wires: state.wires.filter(w => selectedIds.has(w.start.id) && selectedIds.has(w.end.id))
                                    .map(w => ({ startId: w.start.id, endId: w.end.id }))
@@ -1190,7 +1116,7 @@
 
             clipboard.joints.forEach(jData => {
                 const oldId = jData.id;
-                const newJoint = new Joint(pasteCenter.x + jData.x, pasteCenter.y + jData.y, null, jData.type, jData.manualState);
+                const newJoint = new Joint(pasteCenter.x + jData.x, pasteCenter.y + jData.y);
                 newJoint.isSelected = true;
                 state.joints.push(newJoint);
                 newItems.push(newJoint);
@@ -1285,18 +1211,13 @@
             return Math.hypot(p.x - closestPoint.x, p.y - closestPoint.y);
         }
 
-        function animationLoop() {
-            runSimulation();
-            draw();
-            requestAnimationFrame(animationLoop);
-        }
-
+        window.addEventListener('resize', resizeCanvas);
+        
         // Initial setup
         resizeCanvas();
         saveState(); // Save the initial empty state
         updateHistoryButtons();
         showMessage("Select a component from the palette to begin!", 3000);
-        animationLoop();
     </script>
 </body>
 </html>
