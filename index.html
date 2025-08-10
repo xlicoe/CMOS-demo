@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMOS Simulator v1.0</title>
+    <title>CMOS Simulator v2.5</title>
 
     <!--
-        Project: CMOS Simulator v1.0
+        Project: CMOS Simulator v2.5
         Generated with: Google Gemini (Version: 2.5 Pro, Reasoning, math & code)
         Reference: https://gemini.google.com/
-        Date of Final Version: August 9, 2025
-        Development History: This application was built iteratively over the course of 28 prompts,
-        including feature additions, UI refinements, and bug fixes.
+        Date of Final Version: August 10, 2025
+        Development History: This application was built iteratively.
+        v2.5 Change: Updated Input/Output component visuals. Labels are now inside the box, and arrows are represented by a ">" character for a cleaner look.
+        v2.4 Change: Redesigned the Input and Output components with a cleaner, more intuitive look based on user-provided example. They are now rounded rectangles with clear arrows indicating signal flow direction.
+        v2.3 Change: Reworked the UI to make the canvas larger. The truth table is now a floating panel in the bottom-right corner that can be toggled on and off with a new button, maximizing the workspace. The toggle button now has a visual on/off state.
+        v2.2 Change: Reworked the simulation engine to remove complex priority logic. Now, any direct contention between a HIGH and LOW pull on a net results in an ERROR state.
     -->
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -55,6 +58,16 @@
         .message-box {
             transition: opacity 0.5s, transform 0.5s;
         }
+        #truth-table-panel {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            transform: translateX(0);
+            opacity: 1;
+        }
+        #truth-table-panel.hidden {
+            transform: translateX(calc(100% + 2rem));
+            opacity: 0;
+            pointer-events: none;
+        }
         #truth-table-container table {
             width: 100%;
             border-collapse: collapse;
@@ -75,17 +88,17 @@
 </head>
 <body class="bg-gray-900 text-gray-200 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
 
-    <div class="w-full max-w-7xl h-[90vh] bg-gray-800 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col gap-4">
+    <div class="w-full max-w-7xl h-[90vh] bg-gray-800 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col gap-4 relative">
         <header class="text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v1.0</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v2.5</h1>
             <p class="text-gray-400 mt-1 text-sm md:text-base">Drag components, wire them up, and see the truth table update in real-time!</p>
         </header>
 
-        <div class="flex-grow flex flex-col lg:flex-row gap-4 min-h-0">
+        <div class="flex-grow flex flex-col md:flex-row gap-4 min-h-0">
             <!-- Left Column: Controls & Palette -->
-            <div class="w-full lg:w-56 flex-shrink-0 bg-gray-900/50 rounded-xl p-4 border border-gray-700 flex flex-col gap-4">
+            <div class="w-full md:w-56 flex-shrink-0 bg-gray-900/50 rounded-xl p-4 border border-gray-700 flex flex-col gap-4">
                 <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2">Tools</h2>
-                <div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-1 gap-2">
                     <button id="tool-select" class="mode-button active flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v10a4 4 0 0 1-4 4H4"/><path d="m16 16-4 4 4 4"/><path d="M4 20V10a4 4 0 0 1 4-4h12"/></svg>
                         <span>Select</span>
@@ -95,7 +108,7 @@
                         <span>Wire</span>
                     </button>
                     <button id="tool-delete" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2='17'/><line x1='14' y1='11' x2='14' y2='17'/></svg>
                         <span>Delete</span>
                     </button>
                 </div>
@@ -129,11 +142,15 @@
                         <span>Paste</span>
                     </button>
                 </div>
+                 <button id="toggle-truth-table" class="col-span-2 mode-button active flex items-center justify-center gap-2 p-2 mt-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+                    <span>Truth Table</span>
+                </button>
                 
                 <div class="mt-auto space-y-2 pt-4">
                     <div class="grid grid-cols-2 gap-2">
-                         <button id="save-button" class="w-full p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white font-semibold">Save Design</button>
-                         <button id="load-button" class="w-full p-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-semibold">Load Design</button>
+                         <button id="save-button" class="w-full p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white font-semibold">Save</button>
+                         <button id="load-button" class="w-full p-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-semibold">Load</button>
                     </div>
                     <button id="clear-canvas" class="w-full p-2 rounded-lg bg-red-800 hover:bg-red-700 text-white font-semibold">Clear All</button>
                 </div>
@@ -147,9 +164,11 @@
                     <p id="message-text"></p>
                 </div>
             </div>
+        </div>
 
-            <!-- Right Column: Truth Table -->
-            <div class="w-full lg:w-64 flex-shrink-0 bg-gray-900/50 rounded-xl p-4 border border-gray-700 flex flex-col min-h-0">
+        <!-- Right Column: Floating Truth Table -->
+        <div id="truth-table-panel" class="absolute bottom-0 right-0 w-72 max-h-[50vh] p-4 md:p-6">
+            <div class="w-full h-full bg-gray-900/50 rounded-xl p-4 border border-gray-700 flex flex-col min-h-0">
                  <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2">Truth Table</h2>
                  <div id="truth-table-container" class="overflow-auto text-sm flex-grow mt-2">
                      <!-- Table will be generated here -->
@@ -177,6 +196,8 @@
         const messageBox = document.getElementById('message-box');
         const messageText = document.getElementById('message-text');
         const truthTableContainer = document.getElementById('truth-table-container');
+        const truthTablePanel = document.getElementById('truth-table-panel');
+        const toggleTruthTableButton = document.getElementById('toggle-truth-table');
 
         // --- GLOBAL STATE ---
         const GRID_SIZE = 20;
@@ -339,13 +360,29 @@
                 const sourceTerm = this.terminals[0];
                 const drainTerm = this.terminals[1];
                 const gateState = gateTerm.net ? gateTerm.net.state : STATE_FLOAT;
-                let isConducting = (this.type === 'pmos' && gateState < STATE_HIGH) || (this.type === 'nmos' && gateState === STATE_HIGH);
+                let isConducting = (this.type === 'pmos' && gateState === STATE_LOW) || (this.type === 'nmos' && gateState === STATE_HIGH);
                 
                 ctx.beginPath();
                 ctx.moveTo(sourceTerm.x, sourceTerm.y);
                 ctx.lineTo(drainTerm.x, drainTerm.y);
                 ctx.lineWidth = isConducting ? 6 : 4;
-                ctx.strokeStyle = isConducting ? colors.wireOn : colors.componentStroke;
+                
+                if (isConducting) {
+                    let strokeColor;
+                    if (this.type === 'nmos') {
+                        strokeColor = colors.wireOn; 
+                    } else { 
+                        strokeColor = colors.pmos;
+                        const sourceState = sourceTerm.net ? sourceTerm.net.state : STATE_FLOAT;
+                        const drainState = drainTerm.net ? drainTerm.net.state : STATE_FLOAT;
+                        if ((sourceState === STATE_HIGH && drainState === STATE_LOW) || (drainState === STATE_HIGH && sourceState === STATE_LOW)) {
+                            strokeColor = colors.wireOn; 
+                        }
+                    }
+                    ctx.strokeStyle = strokeColor;
+                } else {
+                    ctx.strokeStyle = colors.componentStroke;
+                }
                 ctx.stroke();
 
                 ctx.beginPath();
@@ -411,20 +448,45 @@
                 let netState = STATE_FLOAT;
                 if (this.type === 'input') netState = this.state ? STATE_HIGH : STATE_LOW;
                 else if (term.net) netState = term.net.state;
+                
                 const colorMap = { [STATE_HIGH]: colors.wireOn, [STATE_LOW]: colors.wireOff, [STATE_FLOAT]: colors.wireFloat, [STATE_ERROR]: colors.wireError };
                 ctx.fillStyle = colorMap[netState];
                 ctx.strokeStyle = this.isSelected ? colors.terminalHighlight : colors.componentStroke;
-                ctx.lineWidth = this.isSelected ? 2 : 1;
+                ctx.lineWidth = this.isSelected ? 2 : 1.5;
+
+                // Draw rounded rectangle body
+                const bodyWidth = this.width;
+                const bodyHeight = this.height;
+                const cornerRadius = 8;
                 ctx.beginPath();
-                ctx.rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+                // Custom roundRect path for compatibility
+                ctx.moveTo(this.x - bodyWidth / 2 + cornerRadius, this.y - bodyHeight / 2);
+                ctx.lineTo(this.x + bodyWidth / 2 - cornerRadius, this.y - bodyHeight / 2);
+                ctx.arcTo(this.x + bodyWidth / 2, this.y - bodyHeight / 2, this.x + bodyWidth / 2, this.y - bodyHeight / 2 + cornerRadius, cornerRadius);
+                ctx.lineTo(this.x + bodyWidth / 2, this.y + bodyHeight / 2 - cornerRadius);
+                ctx.arcTo(this.x + bodyWidth / 2, this.y + bodyHeight / 2, this.x + bodyWidth / 2 - cornerRadius, this.y + bodyHeight / 2, cornerRadius);
+                ctx.lineTo(this.x - bodyWidth / 2 + cornerRadius, this.y + bodyHeight / 2);
+                ctx.arcTo(this.x - bodyWidth / 2, this.y + bodyHeight / 2, this.x - bodyWidth / 2, this.y + bodyHeight / 2 - cornerRadius, cornerRadius);
+                ctx.lineTo(this.x - bodyWidth / 2, this.y - bodyHeight / 2 + cornerRadius);
+                ctx.arcTo(this.x - bodyWidth / 2, this.y - bodyHeight / 2, this.x - bodyWidth / 2 + cornerRadius, this.y - bodyHeight / 2, cornerRadius);
+                ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
+                
+                // Draw label and arrow
                 ctx.fillStyle = colors.text;
-                ctx.font = '14px Inter';
+                ctx.font = 'bold 16px Inter';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                const label = this.type === 'input' ? `In ${this.label}` : this.label;
-                ctx.fillText(label, this.x, this.y);
+                
+                let displayText = '';
+                if (this.type === 'input') {
+                    displayText = `${this.label} >`;
+                } else { // output
+                    displayText = `> ${this.label}`;
+                }
+                ctx.fillText(displayText, this.x, this.y);
+                
                 this.terminals.forEach(t => t.draw(isHovered && t === isHovered));
             }
         }
@@ -472,7 +534,6 @@
             }
         }
 
-
         // --- SIMULATION LOGIC ---
         
         class Net {
@@ -484,90 +545,136 @@
         }
 
         function runSimulation() {
+            // --- Part 1: Netlist Generation ---
+            // The first step is to figure out which components are connected together.
+            // A "net" is a group of all terminals and joints that are directly wired together.
+            // We use a Breadth-First Search (BFS) algorithm to discover these connections.
+
             const allPoints = [...state.components.flatMap(c => c.terminals), ...state.joints];
-            allPoints.forEach(p => p.net = null);
+            allPoints.forEach(p => p.net = null); // Reset previous simulation results.
 
             const nets = [];
             let netId = 0;
-            const visited = new Set();
+            const visited = new Set(); // Keep track of points we've already assigned to a net.
 
+            // Iterate through every possible connection point on the canvas.
             for (const startPoint of allPoints) {
-                if (visited.has(startPoint)) continue;
+                if (visited.has(startPoint)) continue; // If already in a net, skip it.
+
+                // This point is the start of a new, undiscovered net.
                 const newNet = new Net(netId++);
-                const queue = [startPoint];
+                const queue = [startPoint]; // The queue for our BFS.
                 visited.add(startPoint);
+
+                // Start the BFS traversal.
                 while (queue.length > 0) {
                     const currentPoint = queue.shift();
-                    currentPoint.net = newNet;
+                    currentPoint.net = newNet; // Assign this point to our new net.
                     newNet.points.add(currentPoint);
+
+                    // Look through all wires to find connections from the current point.
                     for (const wire of state.wires) {
                         let otherPoint = null;
                         if (wire.start === currentPoint) otherPoint = wire.end;
                         if (wire.end === currentPoint) otherPoint = wire.start;
+
+                        // If we found a connected point that we haven't visited, add it to the queue.
                         if (otherPoint && !visited.has(otherPoint)) {
                             visited.add(otherPoint);
                             queue.push(otherPoint);
                         }
                     }
                 }
-                nets.push(newNet);
+                nets.push(newNet); // Add the completed net to our list of all nets.
             }
 
+            // --- Part 2: Iterative State Solving ---
+            // Because the output of one gate can be the input to another, we can't solve the
+            // circuit in a single pass. We must iterate multiple times until the state of
+            // all nets stabilizes. 20 iterations is more than enough for any reasonable circuit.
             for (let i = 0; i < 20; i++) {
-                let changed = false;
-                const nextStates = new Map();
+                let changed = false; // Flag to see if any net changes state in this iteration.
+                const nextStates = new Map(); // Store the calculated next state for each net.
 
+                // For each net, determine what its state should be in the next step.
                 for (const net of nets) {
-                    let hasHigh = false;
-                    let hasLow = false;
+                    let hasVdd = false;       // Is the net directly connected to a HIGH source (VDD, Input)?
+                    let hasGnd = false;       // Is the net directly connected to a LOW source (GND, Input)?
+                    let pullsHigh = false;    // Is a transistor trying to connect this net to a HIGH source?
+                    let pullsLow = false;     // Is a transistor trying to connect this net to a LOW source?
+                    let hasErrorPull = false; // Is a transistor trying to connect this net to an ERROR source?
 
+                    // Analyze every point within the current net.
                     for (const point of net.points) {
                         if (point instanceof Terminal) {
-                            if (point.parent.type === 'vdd') hasHigh = true;
-                            if (point.parent.type === 'gnd') hasLow = true;
-                            if (point.parent.type === 'input') {
-                                if (point.parent.state) hasHigh = true;
-                                else hasLow = true;
-                            }
-
-                            if (point.parent instanceof Transistor) {
-                                const trans = point.parent;
-                                const gateNet = trans.terminals[2].net;
-                                if (!gateNet) continue;
+                            const parent = point.parent;
+                            
+                            // Check for direct connections to power sources or inputs. These are the strongest drivers.
+                            if (parent.type === 'vdd' || (parent.type === 'input' && parent.state)) hasVdd = true;
+                            if (parent.type === 'gnd' || (parent.type === 'input' && !parent.state)) hasGnd = true;
+                            
+                            // Check for connections made through transistors.
+                            if (parent instanceof Transistor) {
+                                const gateNet = parent.terminals[2].net;
+                                if (!gateNet) continue; // Skip if the gate isn't connected.
 
                                 const gateState = gateNet.state;
-                                const isConducting = (trans.type === 'pmos' && gateState < STATE_HIGH) || (trans.type === 'nmos' && gateState === STATE_HIGH);
+                                // Determine if the transistor is conducting based on its type and gate voltage.
+                                const isConducting = (parent.type === 'pmos' && gateState === STATE_LOW) || (parent.type === 'nmos' && gateState === STATE_HIGH);
 
                                 if (isConducting) {
-                                    const otherTerm = point.name === 'source' ? trans.terminals[1] : trans.terminals[0];
+                                    // Find what the other side of the transistor (source/drain) is connected to.
+                                    const otherTerm = point.name === 'source' ? parent.terminals[1] : parent.terminals[0];
                                     const otherNet = otherTerm.net;
                                     if (otherNet) {
-                                        if (otherNet.state === STATE_HIGH) hasHigh = true;
-                                        if (otherNet.state === STATE_LOW) hasLow = true;
+                                        // The other side's state determines what this transistor is trying to do to our current net.
+                                        if (otherNet.state === STATE_HIGH) pullsHigh = true;
+                                        else if (otherNet.state === STATE_LOW) pullsLow = true;
+                                        else if (otherNet.state === STATE_ERROR) hasErrorPull = true;
                                     }
                                 }
                             }
                         }
                     }
                     
-                    let newState = STATE_FLOAT;
-                    if (hasLow) {
-                        newState = STATE_LOW;
-                    } else if (hasHigh) {
+                    // --- Part 3: State Determination Logic ---
+                    // Based on the flags we've set, determine the final state of this net.
+                    let newState = STATE_FLOAT; // Default to floating (high impedance).
+
+                    if (hasVdd && hasGnd) { // Direct short to both VDD and GND.
+                        newState = STATE_ERROR;
+                    } else if (hasVdd) { // Direct connection to VDD is the strongest driver.
                         newState = STATE_HIGH;
+                    } else if (hasGnd) { // Direct connection to GND is the second strongest.
+                        newState = STATE_LOW;
+                    } else if (hasErrorPull) { // Propagate any error states.
+                        newState = STATE_ERROR;
+                    } else if (pullsHigh && pullsLow) { // A transistor is pulling high AND another is pulling low. This is a short circuit.
+                        newState = STATE_ERROR;
+                    } else if (pullsHigh) { // Only being pulled high.
+                        newState = STATE_HIGH;
+                    } else if (pullsLow) { // Only being pulled low.
+                        newState = STATE_LOW;
                     }
 
+                    // Model capacitance: if a net is not being driven by anything, it should hold its previous state.
+                    if (newState === STATE_FLOAT && (net.state === STATE_HIGH || net.state === STATE_LOW)) {
+                        newState = net.state;
+                    }
+                    
                     nextStates.set(net, newState);
                 }
 
+                // Apply the calculated next states to all nets.
                 for (const net of nets) {
                     const newState = nextStates.get(net);
                     if (net.state !== newState) {
                         net.state = newState;
-                        changed = true;
+                        changed = true; // Mark that the circuit has not yet stabilized.
                     }
                 }
 
+                // If no nets changed state during this entire iteration, the circuit is stable and we can stop.
                 if (!changed) break;
             }
         }
@@ -577,8 +684,8 @@
             const inputs = state.components.filter(c => c.type === 'input').sort((a, b) => a.label.localeCompare(b.label));
             const outputs = state.components.filter(c => c.type === 'output').sort((a, b) => a.label.localeCompare(b.label));
 
-            if (inputs.length === 0 || inputs.length > 5) {
-                truthTableContainer.innerHTML = `<p class="p-2 text-gray-400 text-center">${inputs.length > 5 ? 'Too many inputs for truth table.' : 'Add inputs to see truth table.'}</p>`;
+            if (inputs.length === 0 || inputs.length > 8) {
+                truthTableContainer.innerHTML = `<p class="p-2 text-gray-400 text-center">${inputs.length > 8 ? 'Too many inputs for truth table.' : 'Add inputs to see truth table.'}</p>`;
                 return;
             }
 
@@ -594,12 +701,13 @@
                 tableHtml += '<tr>';
                 for (let j = 0; j < inputs.length; j++) {
                     const val = (i >> (inputs.length - 1 - j)) & 1;
-                    inputs[j].state = !!val;
+                    inputs[j].state = !!val; // Modify main state for this row's simulation
                     tableHtml += `<td class="${val ? 'state-high' : 'state-low'}">${val}</td>`;
                 }
 
-                runSimulation();
+                runSimulation(); // Run simulation on the main state
 
+                // Read outputs directly from the main state
                 outputs.forEach(o => {
                     const netState = o.terminals[0].net ? o.terminals[0].net.state : STATE_FLOAT;
                     let val = '?';
@@ -615,8 +723,9 @@
             tableHtml += '</tbody></table>';
             truthTableContainer.innerHTML = tableHtml;
 
+            // Restore original state to the main canvas
             inputs.forEach((input, i) => input.state = originalInputStates[i]);
-            runSimulation();
+            runSimulation(); // Run simulation one last time to update visuals
         }
 
         // --- DRAWING LOGIC ---
@@ -907,6 +1016,11 @@
                 modal.remove();
             };
         });
+        
+        toggleTruthTableButton.addEventListener('click', () => {
+            truthTablePanel.classList.toggle('hidden');
+            toggleTruthTableButton.classList.toggle('active');
+        });
 
         // --- HISTORY (UNDO/REDO) LOGIC ---
         function saveState() {
@@ -914,7 +1028,8 @@
             
             const currentState = JSON.stringify({
                 components: state.components.map(c => ({
-                    id: c.id, type: c.type, x: c.x, y: c.y, label: c.label || null, state: c.state,
+                    id: c.id, type: c.type, x: c.x, y: c.y, label: c.label || null, 
+                    state: c.state,
                     terminals: c.terminals.map(t => ({ id: t.id, name: t.name, offsetX: t.offsetX, offsetY: t.offsetY }))
                 })),
                 joints: state.joints.map(j => ({ id: j.id, x: j.x, y: j.y })),
@@ -947,18 +1062,18 @@
                 } else if (cData.type === 'input' || cData.type === 'output') {
                     comp = new IOComponent(cData.type, cData.x, cData.y, cData.id, cData.label);
                     if (cData.type === 'input') comp.state = cData.state;
-                } else {
+                } else if (cData.type === 'vdd' || cData.type === 'gnd') {
                     comp = new PowerComponent(cData.type, cData.x, cData.y, cData.id);
                 }
                 
-                if (cData.terminals && cData.terminals.length === comp.terminals.length) {
+                if (comp && cData.terminals && cData.terminals.length === comp.terminals.length) {
                     comp.terminals = cData.terminals.map(tData => {
                         const newTerm = new Terminal(comp, tData.offsetX, tData.offsetY, tData.name, tData.id);
                         pointMap.set(newTerm.id, newTerm);
                         return newTerm;
                     });
                 }
-                state.components.push(comp);
+                if (comp) state.components.push(comp);
             });
 
             (stateData.joints || []).forEach(jData => {
@@ -1101,17 +1216,19 @@
                     newComp = new Transistor(cData.type, newX, newY);
                 } else if (cData.type === 'input' || cData.type === 'output') {
                     newComp = new IOComponent(cData.type, newX, newY, null, null);
-                } else {
+                } else if (cData.type === 'vdd' || cData.type === 'gnd') {
                     newComp = new PowerComponent(cData.type, newX, newY);
                 }
                 
-                newComp.isSelected = true;
-                state.components.push(newComp);
-                newItems.push(newComp);
-                idMap.set(oldId, newComp.id);
-                cData.terminals.forEach((tData, i) => {
-                    idMap.set(tData.id, newComp.terminals[i].id);
-                });
+                if (newComp) {
+                    newComp.isSelected = true;
+                    state.components.push(newComp);
+                    newItems.push(newComp);
+                    idMap.set(oldId, newComp.id);
+                    cData.terminals.forEach((tData, i) => {
+                        idMap.set(tData.id, newComp.terminals[i].id);
+                    });
+                }
             });
 
             clipboard.joints.forEach(jData => {
