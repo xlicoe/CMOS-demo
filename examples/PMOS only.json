@@ -1,0 +1,136 @@
+{
+  "components": [
+    {
+      "id": 0,
+      "type": "pmos",
+      "x": 300,
+      "y": 200,
+      "label": null,
+      "terminals": [
+        {
+          "id": 1,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 2,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 3,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "vdd",
+      "x": 300,
+      "y": 120,
+      "label": null,
+      "terminals": [
+        {
+          "id": 9,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "input",
+      "x": 180,
+      "y": 300,
+      "label": "A",
+      "state": true,
+      "terminals": [
+        {
+          "id": 13,
+          "name": "term",
+          "offsetX": 30,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "output",
+      "x": 420,
+      "y": 280,
+      "label": "Out1",
+      "terminals": [
+        {
+          "id": 15,
+          "name": "term",
+          "offsetX": -30,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "type": "gnd",
+      "x": 300,
+      "y": 400,
+      "label": null,
+      "terminals": [
+        {
+          "id": 28,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    }
+  ],
+  "joints": [
+    {
+      "id": 16,
+      "x": 300,
+      "y": 280
+    },
+    {
+      "id": 29,
+      "x": 300,
+      "y": 280
+    }
+  ],
+  "wires": [
+    {
+      "startId": 9,
+      "endId": 1
+    },
+    {
+      "startId": 13,
+      "endId": 3
+    },
+    {
+      "startId": 15,
+      "endId": 16
+    },
+    {
+      "startId": 2,
+      "endId": 29
+    },
+    {
+      "startId": 29,
+      "endId": 16
+    },
+    {
+      "startId": 16,
+      "endId": 29
+    },
+    {
+      "startId": 28,
+      "endId": 16
+    }
+  ],
+  "nextInputLabel": "B",
+  "nextId": 30
+}

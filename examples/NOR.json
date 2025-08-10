@@ -1,0 +1,266 @@
+{
+  "components": [
+    {
+      "id": 0,
+      "type": "pmos",
+      "x": 340,
+      "y": 180,
+      "label": null,
+      "terminals": [
+        {
+          "id": 1,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 2,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 3,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "nmos",
+      "x": 300,
+      "y": 420,
+      "label": null,
+      "terminals": [
+        {
+          "id": 5,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 6,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 7,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "vdd",
+      "x": 340,
+      "y": 120,
+      "label": null,
+      "terminals": [
+        {
+          "id": 9,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "gnd",
+      "x": 340,
+      "y": 520,
+      "label": null,
+      "terminals": [
+        {
+          "id": 11,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "input",
+      "x": 140,
+      "y": 180,
+      "label": "A",
+      "state": true,
+      "terminals": [
+        {
+          "id": 13,
+          "name": "term",
+          "offsetX": 30,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "output",
+      "x": 480,
+      "y": 360,
+      "label": "Out1",
+      "terminals": [
+        {
+          "id": 15,
+          "name": "term",
+          "offsetX": -30,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "type": "input",
+      "x": 60,
+      "y": 280,
+      "label": "B",
+      "state": false,
+      "terminals": [
+        {
+          "id": 28,
+          "name": "term",
+          "offsetX": 30,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "type": "pmos",
+      "x": 340,
+      "y": 280,
+      "label": null,
+      "terminals": [
+        {
+          "id": 30,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 31,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 32,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "type": "nmos",
+      "x": 380,
+      "y": 420,
+      "label": null,
+      "terminals": [
+        {
+          "id": 34,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 35,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 36,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    }
+  ],
+  "joints": [
+    {
+      "id": 37,
+      "x": 320,
+      "y": 360
+    },
+    {
+      "id": 38,
+      "x": 340,
+      "y": 360
+    },
+    {
+      "id": 39,
+      "x": 220,
+      "y": 180
+    }
+  ],
+  "wires": [
+    {
+      "startId": 9,
+      "endId": 1
+    },
+    {
+      "startId": 37,
+      "endId": 5
+    },
+    {
+      "startId": 34,
+      "endId": 37
+    },
+    {
+      "startId": 31,
+      "endId": 38
+    },
+    {
+      "startId": 38,
+      "endId": 37
+    },
+    {
+      "startId": 15,
+      "endId": 38
+    },
+    {
+      "startId": 6,
+      "endId": 11
+    },
+    {
+      "startId": 35,
+      "endId": 11
+    },
+    {
+      "startId": 13,
+      "endId": 39
+    },
+    {
+      "startId": 39,
+      "endId": 3
+    },
+    {
+      "startId": 7,
+      "endId": 39
+    },
+    {
+      "startId": 36,
+      "endId": 28
+    },
+    {
+      "startId": 28,
+      "endId": 32
+    },
+    {
+      "startId": 2,
+      "endId": 30
+    }
+  ],
+  "nextInputLabel": "C",
+  "nextId": 40
+}
