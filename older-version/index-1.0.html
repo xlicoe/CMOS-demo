@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMOS Simulator v1.0</title>
+
+    <!--
+        Project: CMOS Simulator v1.0
+        Generated with: Google Gemini (Version: 2.5 Pro, Reasoning, math & code)
+        Reference: https://gemini.google.com/
+        Date of Final Version: August 9, 2025
+        Development History: This application was built iteratively over the course of 28 prompts,
+        including feature additions, UI refinements, and bug fixes.
+    -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Custom cursor for different modes */
+        .cursor-grab { cursor: grab; }
+        .cursor-grabbing { cursor: grabbing; }
+        .cursor-crosshair { cursor: crosshair; }
+        .cursor-pointer { cursor: pointer; }
+        .cursor-trash { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18'/><path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/><line x1='10' y1='11' x2='10' y2='17'/><line x1='14' y1='11' x2='14' y2='17'/></svg>") 12 12, auto; }
+
+        .palette-item {
+            transition: all 0.2s ease-in-out;
+        }
+        .palette-item:hover {
+            transform: scale(1.05);
+            background-color: #3b82f6; /* blue-600 */
+        }
+        .palette-item.selected {
+            background-color: #2563eb; /* blue-700 */
+            box-shadow: 0 0 0 3px #60a5fa; /* blue-400 */
+        }
+        .mode-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .mode-button.active {
+             background-color: #1d4ed8; /* blue-800 */
+             color: white;
+             box-shadow: 0 0 0 2px #3b82f6; /* blue-600 */
+        }
+        .mode-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .message-box {
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        #truth-table-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #truth-table-container th, #truth-table-container td {
+            padding: 6px 4px;
+            text-align: center;
+            border: 1px solid #4b5563; /* gray-600 */
+        }
+        #truth-table-container th {
+            background-color: #374151; /* gray-700 */
+        }
+        .state-high { color: #4ade80; font-weight: 600; } /* green-400 */
+        .state-low { color: #f87171; font-weight: 600; } /* red-400 */
+        .state-float { color: #f59e0b; } /* amber-500 */
+        .state-error { color: #ef4444; background-color: #7f1d1d; } /* red-500, red-900 */
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
+
+    <div class="w-full max-w-7xl h-[90vh] bg-gray-800 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col gap-4">
+        <header class="text-center">
+            <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v1.0</h1>
+            <p class="text-gray-400 mt-1 text-sm md:text-base">Drag components, wire them up, and see the truth table update in real-time!</p>
+        </header>
+
+        <div class="flex-grow flex flex-col lg:flex-row gap-4 min-h-0">
+            <!-- Left Column: Controls & Palette -->
+            <div class="w-full lg:w-56 flex-shrink-0 bg-gray-900/50 rounded-xl p-4 border border-gray-700 flex flex-col gap-4">
+                <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2">Tools</h2>
+                <div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                    <button id="tool-select" class="mode-button active flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v10a4 4 0 0 1-4 4H4"/><path d="m16 16-4 4 4 4"/><path d="M4 20V10a4 4 0 0 1 4-4h12"/></svg>
+                        <span>Select</span>
+                    </button>
+                    <button id="tool-wire" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 16.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"/><path d="M12 13V2"/><path d="M12 9l3.5-3.5"/><path d="M12 9L8.5 5.5"/><path d="M19 12h-2"/><path d="M5 12H3"/><path d="M19 12l-1.5 1.5"/><path d="M5 12l1.5 1.5"/><path d="M12 22v-2"/></svg>
+                        <span>Wire</span>
+                    </button>
+                    <button id="tool-delete" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                        <span>Delete</span>
+                    </button>
+                </div>
+                
+                <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2 pt-4">Components</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="pmos">PMOS</div>
+                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="nmos">NMOS</div>
+                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="input">Input</div>
+                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="output">Output</div>
+                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="vdd">VDD</div>
+                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="gnd">GND</div>
+                </div>
+
+                <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2 pt-4">Actions</h2>
+                <div class="grid grid-cols-2 gap-2">
+                     <button id="undo-button" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l-3 2.7"/></svg>
+                        <span>Back</span>
+                    </button>
+                     <button id="redo-button" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l3 2.7"/></svg>
+                        <span>Forward</span>
+                    </button>
+                     <button id="copy-button" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span>Copy</span>
+                    </button>
+                     <button id="paste-button" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path></svg>
+                        <span>Paste</span>
+                    </button>
+                </div>
+                
+                <div class="mt-auto space-y-2 pt-4">
+                    <div class="grid grid-cols-2 gap-2">
+                         <button id="save-button" class="w-full p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white font-semibold">Save Design</button>
+                         <button id="load-button" class="w-full p-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-semibold">Load Design</button>
+                    </div>
+                    <button id="clear-canvas" class="w-full p-2 rounded-lg bg-red-800 hover:bg-red-700 text-white font-semibold">Clear All</button>
+                </div>
+                <input type="file" id="file-input" class="hidden" accept=".json">
+            </div>
+
+            <!-- Center Column: Canvas -->
+            <div class="flex-grow bg-gray-900 rounded-xl overflow-hidden border border-gray-700 relative">
+                <canvas id="circuit-canvas"></canvas>
+                <div id="message-box" class="message-box absolute top-4 right-4 bg-red-500 text-white p-3 rounded-lg shadow-lg opacity-0 translate-y-[-20px]">
+                    <p id="message-text"></p>
+                </div>
+            </div>
+
+            <!-- Right Column: Truth Table -->
+            <div class="w-full lg:w-64 flex-shrink-0 bg-gray-900/50 rounded-xl p-4 border border-gray-700 flex flex-col min-h-0">
+                 <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2">Truth Table</h2>
+                 <div id="truth-table-container" class="overflow-auto text-sm flex-grow mt-2">
+                     <!-- Table will be generated here -->
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SETUP ---
+        const canvas = document.getElementById('circuit-canvas');
+        const ctx = canvas.getContext('2d');
+        const toolSelect = document.getElementById('tool-select');
+        const toolWire = document.getElementById('tool-wire');
+        const toolDelete = document.getElementById('tool-delete');
+        const undoButton = document.getElementById('undo-button');
+        const redoButton = document.getElementById('redo-button');
+        const copyButton = document.getElementById('copy-button');
+        const pasteButton = document.getElementById('paste-button');
+        const paletteItems = document.querySelectorAll('.palette-item');
+        const clearButton = document.getElementById('clear-canvas');
+        const saveButton = document.getElementById('save-button');
+        const loadButton = document.getElementById('load-button');
+        const fileInput = document.getElementById('file-input');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const truthTableContainer = document.getElementById('truth-table-container');
+
+        // --- GLOBAL STATE ---
+        const GRID_SIZE = 20;
+        const STATE_HIGH = 1;
+        const STATE_LOW = -1;
+        const STATE_FLOAT = 0;
+        const STATE_ERROR = 99;
+
+        let state = {
+            mode: 'select',
+            placingComponentType: null,
+            dragging: false,
+            wiringStartPoint: null,
+            mouseX: 0,
+            mouseY: 0,
+            dragStartX: 0,
+            dragStartY: 0,
+            selectionBox: null,
+            components: [],
+            wires: [],
+            joints: [],
+            nextInputLabel: 'A',
+            nextId: 0,
+        };
+        let history = [];
+        let historyIndex = -1;
+        let clipboard = null;
+
+        const colors = {
+            wireOff: '#4b5563', wireOn: '#22c55e', wireFloat: '#f59e0b', wireError: '#ef4444',
+            text: '#e5e7eb', pmos: '#f43f5e', nmos: '#3b82f6',
+            componentStroke: '#9ca3af', terminal: '#cbd5e1', terminalHighlight: '#60a5fa',
+            joint: '#f59e0b', grid: '#374151', selection: 'rgba(96, 165, 250, 0.3)'
+        };
+
+        // --- UTILITY & HELPER FUNCTIONS ---
+        
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+        }
+
+        function snapToGrid(value) {
+            return Math.round(value / GRID_SIZE) * GRID_SIZE;
+        }
+
+        function showMessage(text, duration = 3000, isError = false) {
+            messageText.textContent = text;
+            messageBox.classList.toggle('bg-red-500', isError);
+            messageBox.classList.toggle('bg-green-500', !isError);
+            messageBox.classList.remove('opacity-0', 'translate-y-[-20px]');
+            setTimeout(() => {
+                messageBox.classList.add('opacity-0', 'translate-y-[-20px]');
+            }, duration);
+        }
+        
+        function updateCircuit(saveHistory = true) {
+            if (saveHistory) {
+                saveState();
+            }
+            runSimulation();
+            updateTruthTable();
+            draw();
+            updateHistoryButtons();
+        }
+
+        // --- COMPONENT & CIRCUIT CLASSES ---
+        
+        class Component {
+            constructor(type, x, y, id = null) {
+                this.id = id !== null ? id : state.nextId++;
+                this.type = type;
+                this.x = snapToGrid(x);
+                this.y = snapToGrid(y);
+                this.terminals = [];
+                this.isSelected = false;
+            }
+            isClicked(pos) { return false; }
+            draw(isHovered) {}
+            getTerminalAt(pos) {
+                for (const term of this.terminals) {
+                    if (term.isClicked(pos)) return term;
+                }
+                return null;
+            }
+        }
+
+        class Terminal {
+            constructor(parent, offsetX, offsetY, name, id = null) {
+                this.parent = parent;
+                this.id = id !== null ? id : state.nextId++;
+                this.offsetX = offsetX;
+                this.offsetY = offsetY;
+                this.name = name;
+                this.radius = 6;
+                this.net = null;
+            }
+            get x() { return this.parent.x + this.offsetX; }
+            get y() { return this.parent.y + this.offsetY; }
+            isClicked(pos) {
+                return Math.hypot(pos.x - this.x, pos.y - this.y) < this.radius;
+            }
+            draw(isHovered) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = isHovered ? colors.terminalHighlight : colors.terminal;
+                ctx.fill();
+            }
+        }
+
+        class Joint {
+            constructor(x, y, id = null) {
+                this.id = id !== null ? id : state.nextId++;
+                this.x = snapToGrid(x);
+                this.y = snapToGrid(y);
+                this.radius = 5;
+                this.net = null;
+                this.isSelected = false;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+                const netState = this.net ? this.net.state : STATE_FLOAT;
+                const colorMap = { [STATE_HIGH]: colors.wireOn, [STATE_LOW]: colors.wireOff, [STATE_FLOAT]: colors.joint, [STATE_ERROR]: colors.wireError };
+                ctx.fillStyle = colorMap[netState];
+                ctx.fill();
+
+                if (this.isSelected) {
+                    ctx.strokeStyle = colors.terminalHighlight;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+             isClicked(pos) {
+                return Math.hypot(pos.x - this.x, pos.y - this.y) < this.radius;
+            }
+        }
+
+        class Transistor extends Component {
+             constructor(type, x, y, id = null) {
+                super(type, x, y, id);
+                this.width = 40;
+                this.height = 60;
+                this.terminals.push(new Terminal(this, 0, -this.height / 2, 'source'));
+                this.terminals.push(new Terminal(this, 0, this.height / 2, 'drain'));
+                this.terminals.push(new Terminal(this, -this.width / 2, 0, 'gate'));
+            }
+            isClicked(pos) {
+                return pos.x > this.x - this.width / 2 && pos.x < this.x + this.width / 2 &&
+                       pos.y > this.y - this.height / 2 && pos.y < this.y + this.height / 2;
+            }
+            draw(isHovered) {
+                if (this.isSelected) {
+                    ctx.strokeStyle = colors.terminalHighlight;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(this.x - this.width/2 - 4, this.y - this.height/2 - 4, this.width + 8, this.height + 8);
+                }
+
+                const gateTerm = this.terminals[2];
+                const sourceTerm = this.terminals[0];
+                const drainTerm = this.terminals[1];
+                const gateState = gateTerm.net ? gateTerm.net.state : STATE_FLOAT;
+                let isConducting = (this.type === 'pmos' && gateState < STATE_HIGH) || (this.type === 'nmos' && gateState === STATE_HIGH);
+                
+                ctx.beginPath();
+                ctx.moveTo(sourceTerm.x, sourceTerm.y);
+                ctx.lineTo(drainTerm.x, drainTerm.y);
+                ctx.lineWidth = isConducting ? 6 : 4;
+                ctx.strokeStyle = isConducting ? colors.wireOn : colors.componentStroke;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(gateTerm.x, gateTerm.y);
+                ctx.lineTo(this.x - 5, this.y);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = colors.componentStroke;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(this.x - 5, this.y - 20);
+                ctx.lineTo(this.x - 5, this.y + 20);
+                ctx.stroke();
+
+                if (this.type === 'pmos') {
+                    ctx.beginPath();
+                    ctx.arc(this.x - 10, this.y, 5, 0, 2 * Math.PI);
+                    ctx.fillStyle = colors.pmos;
+                    ctx.fill();
+                    
+                    ctx.fillStyle = colors.text;
+                    ctx.font = 'bold 12px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('P', this.x, this.y);
+                } else { // nmos
+                    ctx.fillStyle = colors.text;
+                    ctx.font = 'bold 12px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('N', this.x, this.y);
+                }
+                this.terminals.forEach(t => t.draw(isHovered && t === isHovered));
+            }
+        }
+
+        class IOComponent extends Component {
+            constructor(type, x, y, id = null, label = null) {
+                super(type, x, y, id);
+                this.width = 60;
+                this.height = 40;
+                this.terminals.push(new Terminal(this, this.type === 'input' ? this.width/2 : -this.width/2, 0, 'term'));
+                if (type === 'input') {
+                    this.state = false; // Corresponds to STATE_LOW
+                    this.label = label || state.nextInputLabel;
+                    if (!label) state.nextInputLabel = String.fromCharCode(state.nextInputLabel.charCodeAt(0) + 1);
+                } else {
+                    this.label = label || `Out${state.components.filter(c=>c.type==='output').length + 1}`
+                }
+            }
+            isClicked(pos) {
+                return pos.x > this.x - this.width / 2 && pos.x < this.x + this.width / 2 &&
+                       pos.y > this.y - this.height / 2 && pos.y < this.y + this.height / 2;
+            }
+            toggle() {
+                if (this.type === 'input') {
+                    this.state = !this.state;
+                    updateCircuit();
+                }
+            }
+            draw(isHovered) {
+                const term = this.terminals[0];
+                let netState = STATE_FLOAT;
+                if (this.type === 'input') netState = this.state ? STATE_HIGH : STATE_LOW;
+                else if (term.net) netState = term.net.state;
+                const colorMap = { [STATE_HIGH]: colors.wireOn, [STATE_LOW]: colors.wireOff, [STATE_FLOAT]: colors.wireFloat, [STATE_ERROR]: colors.wireError };
+                ctx.fillStyle = colorMap[netState];
+                ctx.strokeStyle = this.isSelected ? colors.terminalHighlight : colors.componentStroke;
+                ctx.lineWidth = this.isSelected ? 2 : 1;
+                ctx.beginPath();
+                ctx.rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = colors.text;
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const label = this.type === 'input' ? `In ${this.label}` : this.label;
+                ctx.fillText(label, this.x, this.y);
+                this.terminals.forEach(t => t.draw(isHovered && t === isHovered));
+            }
+        }
+        
+        class PowerComponent extends Component {
+            constructor(type, x, y, id = null) {
+                super(type, x, y, id);
+                this.width = 60;
+                this.height = 20;
+                this.terminals.push(new Terminal(this, 0, 0, 'out'));
+            }
+            isClicked(pos) {
+                return pos.x > this.x - this.width / 2 && pos.x < this.x + this.width / 2 &&
+                       pos.y > this.y - this.height / 2 && pos.y < this.y + this.height / 2;
+            }
+            draw(isHovered) {
+                if (this.isSelected) {
+                    ctx.strokeStyle = colors.terminalHighlight;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(this.x - this.width/2 - 4, this.y - this.height/2 - 4, this.width + 8, this.height + 8);
+                }
+
+                const color = this.type === 'vdd' ? colors.wireOn : colors.wireOff;
+                const label = this.type === 'vdd' ? 'VDD' : 'GND';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(this.x - this.width/2, this.y);
+                ctx.lineTo(this.x + this.width/2, this.y);
+                ctx.stroke();
+                if (this.type === 'gnd') {
+                    for(let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x - (10 - i*5), this.y + 5);
+                        ctx.lineTo(this.x + (10 - i*5), this.y + 5);
+                        ctx.lineWidth = 2 - i * 0.5;
+                        ctx.stroke();
+                    }
+                }
+                ctx.fillStyle = color;
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, this.x, this.y - 15);
+                this.terminals.forEach(t => t.draw(isHovered && t === isHovered));
+            }
+        }
+
+
+        // --- SIMULATION LOGIC ---
+        
+        class Net {
+            constructor(id) {
+                this.id = id;
+                this.points = new Set();
+                this.state = STATE_FLOAT;
+            }
+        }
+
+        function runSimulation() {
+            const allPoints = [...state.components.flatMap(c => c.terminals), ...state.joints];
+            allPoints.forEach(p => p.net = null);
+
+            const nets = [];
+            let netId = 0;
+            const visited = new Set();
+
+            for (const startPoint of allPoints) {
+                if (visited.has(startPoint)) continue;
+                const newNet = new Net(netId++);
+                const queue = [startPoint];
+                visited.add(startPoint);
+                while (queue.length > 0) {
+                    const currentPoint = queue.shift();
+                    currentPoint.net = newNet;
+                    newNet.points.add(currentPoint);
+                    for (const wire of state.wires) {
+                        let otherPoint = null;
+                        if (wire.start === currentPoint) otherPoint = wire.end;
+                        if (wire.end === currentPoint) otherPoint = wire.start;
+                        if (otherPoint && !visited.has(otherPoint)) {
+                            visited.add(otherPoint);
+                            queue.push(otherPoint);
+                        }
+                    }
+                }
+                nets.push(newNet);
+            }
+
+            for (let i = 0; i < 20; i++) {
+                let changed = false;
+                const nextStates = new Map();
+
+                for (const net of nets) {
+                    let hasHigh = false;
+                    let hasLow = false;
+
+                    for (const point of net.points) {
+                        if (point instanceof Terminal) {
+                            if (point.parent.type === 'vdd') hasHigh = true;
+                            if (point.parent.type === 'gnd') hasLow = true;
+                            if (point.parent.type === 'input') {
+                                if (point.parent.state) hasHigh = true;
+                                else hasLow = true;
+                            }
+
+                            if (point.parent instanceof Transistor) {
+                                const trans = point.parent;
+                                const gateNet = trans.terminals[2].net;
+                                if (!gateNet) continue;
+
+                                const gateState = gateNet.state;
+                                const isConducting = (trans.type === 'pmos' && gateState < STATE_HIGH) || (trans.type === 'nmos' && gateState === STATE_HIGH);
+
+                                if (isConducting) {
+                                    const otherTerm = point.name === 'source' ? trans.terminals[1] : trans.terminals[0];
+                                    const otherNet = otherTerm.net;
+                                    if (otherNet) {
+                                        if (otherNet.state === STATE_HIGH) hasHigh = true;
+                                        if (otherNet.state === STATE_LOW) hasLow = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    let newState = STATE_FLOAT;
+                    if (hasLow) {
+                        newState = STATE_LOW;
+                    } else if (hasHigh) {
+                        newState = STATE_HIGH;
+                    }
+
+                    nextStates.set(net, newState);
+                }
+
+                for (const net of nets) {
+                    const newState = nextStates.get(net);
+                    if (net.state !== newState) {
+                        net.state = newState;
+                        changed = true;
+                    }
+                }
+
+                if (!changed) break;
+            }
+        }
+
+        // --- TRUTH TABLE LOGIC ---
+        function updateTruthTable() {
+            const inputs = state.components.filter(c => c.type === 'input').sort((a, b) => a.label.localeCompare(b.label));
+            const outputs = state.components.filter(c => c.type === 'output').sort((a, b) => a.label.localeCompare(b.label));
+
+            if (inputs.length === 0 || inputs.length > 5) {
+                truthTableContainer.innerHTML = `<p class="p-2 text-gray-400 text-center">${inputs.length > 5 ? 'Too many inputs for truth table.' : 'Add inputs to see truth table.'}</p>`;
+                return;
+            }
+
+            const originalInputStates = inputs.map(i => i.state);
+            
+            let tableHtml = '<table><thead><tr>';
+            inputs.forEach(i => tableHtml += `<th>${i.label}</th>`);
+            outputs.forEach(o => tableHtml += `<th>${o.label}</th>`);
+            tableHtml += '</tr></thead><tbody>';
+
+            const numRows = 1 << inputs.length;
+            for (let i = 0; i < numRows; i++) {
+                tableHtml += '<tr>';
+                for (let j = 0; j < inputs.length; j++) {
+                    const val = (i >> (inputs.length - 1 - j)) & 1;
+                    inputs[j].state = !!val;
+                    tableHtml += `<td class="${val ? 'state-high' : 'state-low'}">${val}</td>`;
+                }
+
+                runSimulation();
+
+                outputs.forEach(o => {
+                    const netState = o.terminals[0].net ? o.terminals[0].net.state : STATE_FLOAT;
+                    let val = '?';
+                    let className = 'state-float';
+                    if (netState === STATE_HIGH) { val = '1'; className = 'state-high'; }
+                    else if (netState === STATE_LOW) { val = '0'; className = 'state-low'; }
+                    else if (netState === STATE_ERROR) { val = 'X'; className = 'state-error'; }
+                    tableHtml += `<td class="${className}">${val}</td>`;
+                });
+                tableHtml += '</tr>';
+            }
+
+            tableHtml += '</tbody></table>';
+            truthTableContainer.innerHTML = tableHtml;
+
+            inputs.forEach((input, i) => input.state = originalInputStates[i]);
+            runSimulation();
+        }
+
+        // --- DRAWING LOGIC ---
+        function drawGrid() {
+            ctx.fillStyle = colors.grid;
+            for (let x = 0; x < canvas.width; x += GRID_SIZE) {
+                for (let y = 0; y < canvas.height; y += GRID_SIZE) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, 1, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawOrthogonalWire(p1, p2, color) {
+            const midX = snapToGrid((p1.x + p2.x) / 2);
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(midX, p1.y);
+            ctx.lineTo(midX, p2.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            
+            const colorMap = { [STATE_HIGH]: colors.wireOn, [STATE_LOW]: colors.wireOff, [STATE_FLOAT]: colors.wireFloat, [STATE_ERROR]: colors.wireError };
+            
+            state.wires.forEach(wire => {
+                const netState = wire.start.net ? wire.start.net.state : STATE_FLOAT;
+                drawOrthogonalWire(wire.start, wire.end, colorMap[netState]);
+            });
+
+            if (state.mode === 'wire' && state.wiringStartPoint) {
+                const snappedMousePos = { x: snapToGrid(state.mouseX), y: snapToGrid(state.mouseY) };
+                drawOrthogonalWire(state.wiringStartPoint, snappedMousePos, colors.terminalHighlight);
+            }
+
+            const allConnectablePoints = [
+                ...state.components.flatMap(c => c.terminals),
+                ...state.joints
+            ];
+            const hoveredPoint = getHoveredConnectable(allConnectablePoints, {x: state.mouseX, y: state.mouseY});
+
+            state.components.forEach(comp => comp.draw(hoveredPoint && hoveredPoint.parent === comp ? hoveredPoint : null));
+            state.joints.forEach(j => j.draw());
+
+            if (state.selectionBox) {
+                ctx.fillStyle = colors.selection;
+                ctx.fillRect(state.selectionBox.x, state.selectionBox.y, state.selectionBox.w, state.selectionBox.h);
+                ctx.strokeStyle = colors.terminalHighlight;
+                ctx.strokeRect(state.selectionBox.x, state.selectionBox.y, state.selectionBox.w, state.selectionBox.h);
+            }
+        }
+
+        // --- EVENT HANDLERS ---
+        function setMode(newMode) {
+            state.mode = newMode;
+            state.placingComponentType = null;
+            toolSelect.classList.toggle('active', newMode === 'select');
+            toolWire.classList.toggle('active', newMode === 'wire');
+            toolDelete.classList.toggle('active', newMode === 'delete');
+            paletteItems.forEach(p => p.classList.remove('selected'));
+            canvas.classList.toggle('cursor-trash', newMode === 'delete');
+        }
+
+        function getHoveredConnectable(points, pos) {
+            for (const p of points) {
+                if (p.isClicked(pos)) return p;
+            }
+            return null;
+        }
+
+        function getSelectedItems() {
+            return [...state.components, ...state.joints].filter(item => item.isSelected);
+        }
+
+        function clearSelection() {
+            state.components.forEach(c => c.isSelected = false);
+            state.joints.forEach(j => j.isSelected = false);
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const pos = getMousePos(e);
+            if (state.placingComponentType) {
+                let newComp;
+                const type = state.placingComponentType;
+                if (type === 'pmos' || type === 'nmos') newComp = new Transistor(type, pos.x, pos.y);
+                else if (type === 'input' || type === 'output') newComp = new IOComponent(type, pos.x, pos.y);
+                else if (type === 'vdd' || type === 'gnd') newComp = new PowerComponent(type, pos.x, pos.y);
+                if (newComp) state.components.push(newComp);
+                setMode('select');
+                updateCircuit();
+                return;
+            }
+
+            const allPoints = [...state.components.flatMap(c => c.terminals), ...state.joints];
+            const point = getHoveredConnectable(allPoints, pos);
+            const comp = state.components.find(c => c.isClicked(pos));
+
+            if (state.mode === 'wire') {
+                if (point) {
+                    state.wiringStartPoint = point;
+                }
+            } else if (state.mode === 'select') {
+                state.dragStartX = pos.x;
+                state.dragStartY = pos.y;
+                state.dragging = true;
+
+                if (comp) {
+                    if (!comp.isSelected && !e.shiftKey) {
+                        clearSelection();
+                    }
+                    comp.isSelected = !e.shiftKey || !comp.isSelected;
+                } else {
+                    if (!e.shiftKey) clearSelection();
+                    state.selectionBox = { x: pos.x, y: pos.y, w: 0, h: 0 };
+                }
+                draw();
+            } else if (state.mode === 'delete') {
+                if (point && point instanceof Joint) {
+                    state.joints = state.joints.filter(j => j.id !== point.id);
+                    state.wires = state.wires.filter(w => w.start.id !== point.id && w.end.id !== point.id);
+                    updateCircuit();
+                    return;
+                }
+                for (let i = state.wires.length - 1; i >= 0; i--) {
+                    const wire = state.wires[i];
+                    if (distToSegment(pos, wire.start, wire.end) < 5) {
+                        state.wires.splice(i, 1);
+                        updateCircuit();
+                        return;
+                    }
+                }
+                if (comp) {
+                    state.components = state.components.filter(c => c.id !== comp.id);
+                    const termIds = new Set(comp.terminals.map(t => t.id));
+                    state.wires = state.wires.filter(w => !termIds.has(w.start.id) && !termIds.has(w.end.id));
+                    updateCircuit();
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const pos = getMousePos(e);
+            state.mouseX = pos.x;
+            state.mouseY = pos.y;
+
+            if (state.dragging) {
+                if (state.selectionBox) {
+                    state.selectionBox.w = pos.x - state.dragStartX;
+                    state.selectionBox.h = pos.y - state.dragStartY;
+                    draw();
+                } else {
+                    const dx = snapToGrid(pos.x) - snapToGrid(state.dragStartX);
+                    const dy = snapToGrid(pos.y) - snapToGrid(state.dragStartY);
+
+                    getSelectedItems().forEach(item => {
+                        item.x += dx;
+                        item.y += dy;
+                    });
+
+                    state.dragStartX = snapToGrid(pos.x);
+                    state.dragStartY = snapToGrid(pos.y);
+                    updateCircuit(false);
+                }
+            } else {
+                canvas.classList.toggle('cursor-grab', state.mode === 'select' && !!state.components.find(c => c.isClicked(pos)));
+                const allPoints = [...state.components.flatMap(c => c.terminals), ...state.joints];
+                canvas.classList.toggle('cursor-crosshair', state.mode === 'wire' && !!getHoveredConnectable(allPoints, pos));
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (state.dragging) {
+                const pos = getMousePos(e);
+                const distMoved = Math.hypot(pos.x - state.dragStartX, pos.y - state.dragStartY);
+                const selected = getSelectedItems();
+                
+                if (state.selectionBox) {
+                    const box = state.selectionBox;
+                    const x1 = Math.min(box.x, box.x + box.w);
+                    const x2 = Math.max(box.x, box.x + box.w);
+                    const y1 = Math.min(box.y, box.y + box.h);
+                    const y2 = Math.max(box.y, box.y + box.h);
+
+                    [...state.components, ...state.joints].forEach(item => {
+                        if (item.x >= x1 && item.x <= x2 && item.y >= y1 && item.y <= y2) {
+                            item.isSelected = true;
+                        }
+                    });
+                    state.selectionBox = null;
+                    draw();
+                } else if (distMoved < 5 && selected.length === 1 && selected[0] instanceof IOComponent && selected[0].type === 'input') {
+                    selected[0].toggle();
+                } else if (distMoved > 5) {
+                    updateCircuit(); // Save move to history
+                }
+            }
+            state.dragging = false;
+
+            if (state.wiringStartPoint) {
+                const pos = getMousePos(e);
+                const allPoints = [...state.components.flatMap(c => c.terminals), ...state.joints];
+                const endPoint = getHoveredConnectable(allPoints, pos);
+
+                if (endPoint && endPoint !== state.wiringStartPoint) {
+                    state.wires.push({ start: state.wiringStartPoint, end: endPoint });
+                } else {
+                    let bestWire = null;
+                    let minDistance = Infinity;
+                    for(const wire of state.wires) {
+                        const dist = distToSegment(pos, wire.start, wire.end);
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            bestWire = wire;
+                        }
+                    }
+
+                    if (bestWire && minDistance < 10) {
+                        const jointPos = getClosestPointOnOrthogonalSegment(pos, bestWire.start, bestWire.end);
+                        const newJoint = new Joint(jointPos.x, jointPos.y);
+                        state.joints.push(newJoint);
+                        
+                        state.wires = state.wires.filter(w => w !== bestWire);
+                        state.wires.push({ start: bestWire.start, end: newJoint });
+                        state.wires.push({ start: newJoint, end: bestWire.end });
+                        state.wires.push({ start: state.wiringStartPoint, end: newJoint });
+                    }
+                }
+                state.wiringStartPoint = null;
+                updateCircuit();
+            }
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+             if (state.dragging && !state.selectionBox) {
+                 updateCircuit(); // Save state if dragging off canvas
+             }
+             state.dragging = false;
+             state.wiringStartPoint = null;
+             state.selectionBox = null;
+             draw();
+        });
+
+        toolSelect.addEventListener('click', () => setMode('select'));
+        toolWire.addEventListener('click', () => setMode('wire'));
+        toolDelete.addEventListener('click', () => setMode('delete'));
+        
+        paletteItems.forEach(item => {
+            item.addEventListener('click', () => {
+                setMode('select');
+                state.placingComponentType = item.dataset.type;
+                paletteItems.forEach(p => p.classList.remove('selected'));
+                item.classList.add('selected');
+            });
+        });
+        
+        clearButton.addEventListener('click', () => {
+            const modalHTML = `
+                <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+                        <h3 class="text-lg font-bold text-white mb-4">Clear Canvas?</h3>
+                        <p class="text-gray-300 mb-6">Are you sure you want to delete all components and wires? This action cannot be undone.</p>
+                        <div class="flex justify-end gap-4">
+                            <button id="modal-cancel" class="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white">Cancel</button>
+                            <button id="modal-confirm" class="px-4 py-2 rounded-lg bg-red-700 hover:bg-red-600 text-white">Confirm & Clear</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('modal-cancel').onclick = () => modal.remove();
+            document.getElementById('modal-confirm').onclick = () => {
+                state.components = [];
+                state.wires = [];
+                state.joints = [];
+                state.nextInputLabel = 'A';
+                updateCircuit();
+                modal.remove();
+            };
+        });
+
+        // --- HISTORY (UNDO/REDO) LOGIC ---
+        function saveState() {
+            history.splice(historyIndex + 1);
+            
+            const currentState = JSON.stringify({
+                components: state.components.map(c => ({
+                    id: c.id, type: c.type, x: c.x, y: c.y, label: c.label || null, state: c.state,
+                    terminals: c.terminals.map(t => ({ id: t.id, name: t.name, offsetX: t.offsetX, offsetY: t.offsetY }))
+                })),
+                joints: state.joints.map(j => ({ id: j.id, x: j.x, y: j.y })),
+                wires: state.wires.map(w => ({ startId: w.start.id, endId: w.end.id })),
+                nextInputLabel: state.nextInputLabel,
+                nextId: state.nextId
+            });
+
+            if (history.length > 0 && history[historyIndex] === currentState) {
+                return;
+            }
+
+            history.push(currentState);
+            historyIndex = history.length - 1;
+        }
+
+        function loadState(stateData) {
+            state.components = [];
+            state.wires = [];
+            state.joints = [];
+            state.nextId = stateData.nextId || 0;
+            state.nextInputLabel = stateData.nextInputLabel || 'A';
+
+            const pointMap = new Map();
+
+            stateData.components.forEach(cData => {
+                let comp;
+                if (cData.type === 'pmos' || cData.type === 'nmos') {
+                    comp = new Transistor(cData.type, cData.x, cData.y, cData.id);
+                } else if (cData.type === 'input' || cData.type === 'output') {
+                    comp = new IOComponent(cData.type, cData.x, cData.y, cData.id, cData.label);
+                    if (cData.type === 'input') comp.state = cData.state;
+                } else {
+                    comp = new PowerComponent(cData.type, cData.x, cData.y, cData.id);
+                }
+                
+                if (cData.terminals && cData.terminals.length === comp.terminals.length) {
+                    comp.terminals = cData.terminals.map(tData => {
+                        const newTerm = new Terminal(comp, tData.offsetX, tData.offsetY, tData.name, tData.id);
+                        pointMap.set(newTerm.id, newTerm);
+                        return newTerm;
+                    });
+                }
+                state.components.push(comp);
+            });
+
+            (stateData.joints || []).forEach(jData => {
+                const joint = new Joint(jData.x, jData.y, jData.id);
+                state.joints.push(joint);
+                pointMap.set(joint.id, joint);
+            });
+
+            stateData.wires.forEach(wData => {
+                const startPoint = pointMap.get(wData.startId);
+                const endPoint = pointMap.get(wData.endId);
+                if (startPoint && endPoint) {
+                    state.wires.push({ start: startPoint, end: endPoint });
+                }
+            });
+
+            updateCircuit(false);
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                loadState(JSON.parse(history[historyIndex]));
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                loadState(JSON.parse(history[historyIndex]));
+            }
+        }
+
+        function updateHistoryButtons() {
+            undoButton.disabled = historyIndex <= 0;
+            redoButton.disabled = historyIndex >= history.length - 1;
+        }
+
+        undoButton.addEventListener('click', undo);
+        redoButton.addEventListener('click', redo);
+
+
+        // --- SAVE/LOAD/COPY/PASTE LOGIC ---
+        saveButton.addEventListener('click', () => {
+            try {
+                const saveData = JSON.parse(history[historyIndex]);
+                const jsonString = JSON.stringify(saveData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'cmos-design.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                showMessage("Design saved successfully!", 3000);
+            } catch (error) {
+                showMessage("Failed to save design.", 3000, true);
+                console.error("Save error:", error);
+            }
+        });
+
+        loadButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const loadedData = JSON.parse(e.target.result);
+                    history = [JSON.stringify(loadedData)];
+                    historyIndex = 0;
+                    loadState(loadedData);
+                    showMessage("Design loaded successfully!", 3000);
+                } catch (error) {
+                    showMessage("Failed to load or parse file.", 3000, true);
+                    console.error("Load error:", error);
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function copySelection() {
+            const selectedItems = getSelectedItems();
+            if (selectedItems.length === 0) {
+                showMessage("Nothing selected to copy.", 2000, true);
+                return;
+            }
+
+            const selectedIds = new Set(selectedItems.map(item => item.id));
+
+            const center = selectedItems.reduce((acc, item) => ({ x: acc.x + item.x, y: acc.y + item.y }), {x: 0, y: 0});
+            center.x /= selectedItems.length;
+            center.y /= selectedItems.length;
+
+            clipboard = {
+                components: state.components.filter(c => c.isSelected).map(c => ({
+                    id: c.id,
+                    type: c.type, 
+                    x: c.x - center.x, 
+                    y: c.y - center.y, 
+                    label: c.label || null,
+                    terminals: c.terminals.map(t => ({ id: t.id }))
+                })),
+                joints: state.joints.filter(j => j.isSelected).map(j => ({
+                    id: j.id,
+                    x: j.x - center.x, 
+                    y: j.y - center.y
+                })),
+                wires: state.wires.filter(w => selectedIds.has(w.start.id) && selectedIds.has(w.end.id))
+                                   .map(w => ({ startId: w.start.id, endId: w.end.id }))
+            };
+            showMessage("Selection copied!", 2000);
+        }
+
+        function pasteFromClipboard() {
+            if (!clipboard) {
+                showMessage("Clipboard is empty.", 2000, true);
+                return;
+            }
+
+            clearSelection();
+            const idMap = new Map();
+            const newItems = [];
+
+            const pasteCenter = { x: snapToGrid(state.mouseX), y: snapToGrid(state.mouseY) };
+
+            clipboard.components.forEach(cData => {
+                const oldId = cData.id;
+                let newComp;
+                const newX = pasteCenter.x + cData.x;
+                const newY = pasteCenter.y + cData.y;
+
+                if (cData.type === 'pmos' || cData.type === 'nmos') {
+                    newComp = new Transistor(cData.type, newX, newY);
+                } else if (cData.type === 'input' || cData.type === 'output') {
+                    newComp = new IOComponent(cData.type, newX, newY, null, null);
+                } else {
+                    newComp = new PowerComponent(cData.type, newX, newY);
+                }
+                
+                newComp.isSelected = true;
+                state.components.push(newComp);
+                newItems.push(newComp);
+                idMap.set(oldId, newComp.id);
+                cData.terminals.forEach((tData, i) => {
+                    idMap.set(tData.id, newComp.terminals[i].id);
+                });
+            });
+
+            clipboard.joints.forEach(jData => {
+                const oldId = jData.id;
+                const newJoint = new Joint(pasteCenter.x + jData.x, pasteCenter.y + jData.y);
+                newJoint.isSelected = true;
+                state.joints.push(newJoint);
+                newItems.push(newJoint);
+                idMap.set(oldId, newJoint.id);
+            });
+            
+            const allNewPoints = [...state.components, ...state.joints].reduce((map, item) => {
+                map.set(item.id, item);
+                if(item.terminals) item.terminals.forEach(t => map.set(t.id, t));
+                return map;
+            }, new Map());
+
+            clipboard.wires.forEach(wData => {
+                const newStartId = idMap.get(wData.startId);
+                const newEndId = idMap.get(wData.endId);
+                const startPoint = allNewPoints.get(newStartId);
+                const endPoint = allNewPoints.get(newEndId);
+                if (startPoint && endPoint) {
+                    state.wires.push({ start: startPoint, end: endPoint });
+                }
+            });
+
+            updateCircuit();
+        }
+
+        copyButton.addEventListener('click', copySelection);
+        pasteButton.addEventListener('click', pasteFromClipboard);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key.toLowerCase()) {
+                    case 'c':
+                        copySelection();
+                        e.preventDefault();
+                        break;
+                    case 'v':
+                        pasteFromClipboard();
+                        e.preventDefault();
+                        break;
+                    case 'z':
+                        undo();
+                        e.preventDefault();
+                        break;
+                    case 'y':
+                        redo();
+                        e.preventDefault();
+                        break;
+                }
+            }
+        });
+        
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            updateCircuit(false);
+        }
+        
+        function getClosestPointOnOrthogonalSegment(p, v, w) {
+            const midX = snapToGrid((v.x + w.x) / 2);
+            const path = [{x:v.x, y:v.y}, {x:midX, y:v.y}, {x:midX, y:w.y}, {x:w.x, y:w.y}];
+            let closestPoint = null;
+            let min_dist = Infinity;
+
+            for(let i=0; i<path.length-1; i++) {
+                const p1 = path[i];
+                const p2 = path[i+1];
+                const l2 = (p1.x - p2.x)**2 + (p1.y - p2.y)**2;
+                if (l2 == 0) {
+                    const dist = Math.hypot(p.x - p1.x, p.y - p1.y);
+                     if (dist < min_dist) {
+                        min_dist = dist;
+                        closestPoint = {x: p1.x, y: p1.y};
+                    }
+                    continue;
+                }
+                let t = ((p.x - p1.x) * (p2.x - p1.x) + (p.y - p1.y) * (p2.y - p1.y)) / l2;
+                t = Math.max(0, Math.min(1, t));
+                const currentClosestPoint = {x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y)};
+                const dist = Math.hypot(p.x - currentClosestPoint.x, p.y - currentClosestPoint.y);
+
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    closestPoint = currentClosestPoint;
+                }
+            }
+            return closestPoint;
+        }
+        
+        function distToSegment(p, v, w) {
+            const closestPoint = getClosestPointOnOrthogonalSegment(p, v, w);
+            return Math.hypot(p.x - closestPoint.x, p.y - closestPoint.y);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Initial setup
+        resizeCanvas();
+        saveState(); // Save the initial empty state
+        updateHistoryButtons();
+        showMessage("Select a component from the palette to begin!", 3000);
+    </script>
+</body>
+</html>
