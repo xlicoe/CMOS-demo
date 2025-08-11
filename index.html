@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMOS Simulator v2.5</title>
+    <title>CMOS Simulator v2.7</title>
 
     <!--
-        Project: CMOS Simulator v2.5
+        Project: CMOS Simulator v2.7
         Generated with: Google Gemini (Version: 2.5 Pro, Reasoning, math & code)
         Reference: https://gemini.google.com/
         Date of Final Version: August 10, 2025
         Development History: This application was built iteratively.
+        v2.7 Change: Added box-select functionality to Delete mode. Users can now click and drag in delete mode to remove multiple components at once.
+        v2.6 Change: Implemented a smarter orthogonal wire routing algorithm. It now chooses between H-V-H and V-H-V paths based on which is more direct, reducing wire overlaps.
         v2.5 Change: Updated Input/Output component visuals. Labels are now inside the box, and arrows are represented by a ">" character for a cleaner look.
         v2.4 Change: Redesigned the Input and Output components with a cleaner, more intuitive look based on user-provided example. They are now rounded rectangles with clear arrows indicating signal flow direction.
         v2.3 Change: Reworked the UI to make the canvas larger. The truth table is now a floating panel in the bottom-right corner that can be toggled on and off with a new button, maximizing the workspace. The toggle button now has a visual on/off state.
@@ -90,7 +92,7 @@
 
     <div class="w-full max-w-7xl h-[90vh] bg-gray-800 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col gap-4 relative">
         <header class="text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v2.5</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v2.6</h1>
             <p class="text-gray-400 mt-1 text-sm md:text-base">Drag components, wire them up, and see the truth table update in real-time!</p>
         </header>
 
@@ -483,7 +485,8 @@
                 if (this.type === 'input') {
                     displayText = `${this.label} >`;
                 } else { // output
-                    displayText = `> ${this.label}`;
+                    const numericLabel = this.label.replace('Out', '');
+                    displayText = `> ${numericLabel}`;
                 }
                 ctx.fillText(displayText, this.x, this.y);
                 
@@ -741,11 +744,22 @@
         }
 
         function drawOrthogonalWire(p1, p2, color) {
-            const midX = snapToGrid((p1.x + p2.x) / 2);
+            const dx = Math.abs(p1.x - p2.x);
+            const dy = Math.abs(p1.y - p2.y);
+
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(midX, p1.y);
-            ctx.lineTo(midX, p2.y);
+
+            if (dx > dy) { // Prefer H-V-H routing
+                const midX = snapToGrid((p1.x + p2.x) / 2);
+                ctx.lineTo(midX, p1.y);
+                ctx.lineTo(midX, p2.y);
+            } else { // Prefer V-H-V routing
+                const midY = snapToGrid((p1.y + p2.y) / 2);
+                ctx.lineTo(p1.x, midY);
+                ctx.lineTo(p2.x, midY);
+            }
+            
             ctx.lineTo(p2.x, p2.y);
             ctx.strokeStyle = color;
             ctx.lineWidth = 4;
@@ -779,9 +793,14 @@
             state.joints.forEach(j => j.draw());
 
             if (state.selectionBox) {
-                ctx.fillStyle = colors.selection;
+                if (state.mode === 'delete') {
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; // red-500 with opacity
+                    ctx.strokeStyle = '#ef4444'; // red-500
+                } else {
+                    ctx.fillStyle = colors.selection;
+                    ctx.strokeStyle = colors.terminalHighlight;
+                }
                 ctx.fillRect(state.selectionBox.x, state.selectionBox.y, state.selectionBox.w, state.selectionBox.h);
-                ctx.strokeStyle = colors.terminalHighlight;
                 ctx.strokeRect(state.selectionBox.x, state.selectionBox.y, state.selectionBox.w, state.selectionBox.h);
             }
         }
@@ -851,25 +870,35 @@
                 }
                 draw();
             } else if (state.mode === 'delete') {
-                if (point && point instanceof Joint) {
+                 let itemClicked = false;
+                 if (point && point instanceof Joint) {
                     state.joints = state.joints.filter(j => j.id !== point.id);
                     state.wires = state.wires.filter(w => w.start.id !== point.id && w.end.id !== point.id);
-                    updateCircuit();
-                    return;
+                    itemClicked = true;
                 }
                 for (let i = state.wires.length - 1; i >= 0; i--) {
                     const wire = state.wires[i];
                     if (distToSegment(pos, wire.start, wire.end) < 5) {
                         state.wires.splice(i, 1);
-                        updateCircuit();
-                        return;
+                        itemClicked = true;
+                        break; // Only delete one wire per click
                     }
                 }
-                if (comp) {
+                if (!itemClicked && comp) {
                     state.components = state.components.filter(c => c.id !== comp.id);
                     const termIds = new Set(comp.terminals.map(t => t.id));
                     state.wires = state.wires.filter(w => !termIds.has(w.start.id) && !termIds.has(w.end.id));
+                    itemClicked = true;
+                }
+
+                if (itemClicked) {
                     updateCircuit();
+                } else {
+                    // Start box selection for delete
+                    state.dragStartX = pos.x;
+                    state.dragStartY = pos.y;
+                    state.dragging = true;
+                    state.selectionBox = { x: pos.x, y: pos.y, w: 0, h: 0 };
                 }
             }
         });
@@ -909,7 +938,6 @@
             if (state.dragging) {
                 const pos = getMousePos(e);
                 const distMoved = Math.hypot(pos.x - state.dragStartX, pos.y - state.dragStartY);
-                const selected = getSelectedItems();
                 
                 if (state.selectionBox) {
                     const box = state.selectionBox;
@@ -918,17 +946,42 @@
                     const y1 = Math.min(box.y, box.y + box.h);
                     const y2 = Math.max(box.y, box.y + box.h);
 
-                    [...state.components, ...state.joints].forEach(item => {
-                        if (item.x >= x1 && item.x <= x2 && item.y >= y1 && item.y <= y2) {
-                            item.isSelected = true;
+                    if (state.mode === 'delete') {
+                        const idsToDelete = new Set();
+                        state.components.forEach(c => {
+                            if (c.x >= x1 && c.x <= x2 && c.y >= y1 && c.y <= y2) {
+                                idsToDelete.add(c.id);
+                                c.terminals.forEach(t => idsToDelete.add(t.id));
+                            }
+                        });
+                        state.joints.forEach(j => {
+                            if (j.x >= x1 && j.x <= x2 && j.y >= y1 && j.y <= y2) {
+                                idsToDelete.add(j.id);
+                            }
+                        });
+                        
+                        if (idsToDelete.size > 0) {
+                            state.components = state.components.filter(c => !idsToDelete.has(c.id));
+                            state.joints = state.joints.filter(j => !idsToDelete.has(j.id));
+                            state.wires = state.wires.filter(w => !idsToDelete.has(w.start.id) && !idsToDelete.has(w.end.id));
+                            updateCircuit();
                         }
-                    });
+                    } else if (state.mode === 'select') {
+                        [...state.components, ...state.joints].forEach(item => {
+                            if (item.x >= x1 && item.x <= x2 && item.y >= y1 && item.y <= y2) {
+                                item.isSelected = true;
+                            }
+                        });
+                        draw();
+                    }
                     state.selectionBox = null;
-                    draw();
-                } else if (distMoved < 5 && selected.length === 1 && selected[0] instanceof IOComponent && selected[0].type === 'input') {
-                    selected[0].toggle();
-                } else if (distMoved > 5) {
-                    updateCircuit(); // Save move to history
+                } else {
+                    const selected = getSelectedItems();
+                    if (distMoved < 5 && selected.length === 1 && selected[0] instanceof IOComponent && selected[0].type === 'input') {
+                        selected[0].toggle();
+                    } else if (distMoved > 5) {
+                        updateCircuit(); // Save move to history
+                    }
                 }
             }
             state.dragging = false;
@@ -1293,8 +1346,18 @@
         }
         
         function getClosestPointOnOrthogonalSegment(p, v, w) {
-            const midX = snapToGrid((v.x + w.x) / 2);
-            const path = [{x:v.x, y:v.y}, {x:midX, y:v.y}, {x:midX, y:w.y}, {x:w.x, y:w.y}];
+            const dx = Math.abs(v.x - w.x);
+            const dy = Math.abs(v.y - w.y);
+            let path;
+
+            if (dx > dy) { // H-V-H path
+                const midX = snapToGrid((v.x + w.x) / 2);
+                path = [{x:v.x, y:v.y}, {x:midX, y:v.y}, {x:midX, y:w.y}, {x:w.x, y:w.y}];
+            } else { // V-H-V path
+                const midY = snapToGrid((v.y + w.y) / 2);
+                path = [{x:v.x, y:v.y}, {x:v.x, y:midY}, {x:w.x, y:midY}, {x:w.x, y:w.y}];
+            }
+            
             let closestPoint = null;
             let min_dist = Infinity;
 
