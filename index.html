@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMOS Simulator v3.3</title>
+    <title>CMOS Simulator v3.4</title>
 
     <!--
-        Project: CMOS Simulator v3.3
+        Project: CMOS Simulator v3.4
         Generated with: Google Gemini (Version: 2.5 Pro, Reasoning, math & code)
         Reference: https://gemini.google.com/
         Date of Final Version: August 15, 2025
         Development History: This application was built iteratively.
-        v2.9-v3.3 Change: Fixed left column not showing properly on MacPro screens.
+        v2.9-v3.4 Change: Fixed left column not showing properly on MacPro screens.
         v2.3-v2.8 Change: UI and visual change.
         v2.2 Change: Reworked the simulation engine to remove complex priority logic.
     -->
+
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -107,18 +108,18 @@
 </head>
 <body class="bg-gray-900 text-gray-200 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
 
-    <div class="w-full max-w-7xl h-[90vh] bg-gray-800 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col gap-4 relative">
+    <div class="w-full max-w-7xl h-[90vh] bg-gray-800 rounded-2xl shadow-2xl p-2 md:p-4 flex flex-col gap-2 relative">
         <header class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <div class="text-xl font-bold text-white">Coe College</div>
+                <div class="text-lg font-bold text-white">Coe College</div>
             </div>
             <div class="text-center">
-                <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v3.3</h1>
-                <p class="text-gray-400 mt-1 text-sm md:text-base">Drag components, wire them up, and see the truth table update in real-time!</p>
+                <h1 class="text-lg md:text-xl font-bold text-white">CMOS Simulator v3.4</h1>
+                <p class="text-gray-400 text-xs">Drag components, wire them up, and see the truth table update in real-time!</p>
             </div>
             <div class="text-right">
-                <p class="text-lg font-semibold text-white">ENR 325</p>
-                <p class="text-sm text-gray-400">Fall 2025</p>
+                <p class="text-base font-semibold text-white">ENR 325</p>
+                <p class="text-xs text-gray-400">Fall 2025</p>
             </div>
         </header>
 
@@ -156,7 +157,6 @@
                     </div>
                 </div>
 
-                <!-- MODIFIED: Actions section updated -->
                 <div class="flex-grow flex flex-col">
                     <nav class="flex border-b border-gray-600">
                         <button class="action-tab-button active w-1/2 py-1 text-center font-medium text-sm" data-tab="manage">Manage</button>
