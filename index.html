@@ -1,18 +1,19 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMOS Simulator v2.8</title>
+    <title>CMOS Simulator v3.1</title>
 
     <!--
-        Project: CMOS Simulator v2.8
+        Project: CMOS Simulator v3.1
         Generated with: Google Gemini (Version: 2.5 Pro, Reasoning, math & code)
         Reference: https://gemini.google.com/
-        Date of Final Version: August 10, 2025
+        Date of Final Version: August 15, 2025
         Development History: This application was built iteratively.
+        v2.9-v3.1 Change: Fixed left column not showing properly on MacPro screens.
         v2.3-v2.8 Change: UI and visual change.
-        v2.2 Change: Reworked the simulation engine to remove complex priority logic. Now, any direct contention between a HIGH and LOW pull on a net results in an ERROR state.
+        v2.2 Change: Reworked the simulation engine to remove complex priority logic.
     -->
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -53,6 +54,12 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        .vertical-label {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            text-align: center;
+            white-space: nowrap;
+        }
         .message-box {
             transition: opacity 0.5s, transform 0.5s;
         }
@@ -92,7 +99,7 @@
                 <div class="text-xl font-bold text-white">Coe College</div>
             </div>
             <div class="text-center">
-                <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v2.8</h1>
+                <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v3.1</h1>
                 <p class="text-gray-400 mt-1 text-sm md:text-base">Drag components, wire them up, and see the truth table update in real-time!</p>
             </div>
             <div class="text-right">
@@ -104,55 +111,63 @@
         <div class="flex-grow flex flex-col md:flex-row gap-4 min-h-0">
             <!-- Left Column: Controls & Palette -->
             <div class="w-full md:w-56 flex-shrink-0 bg-gray-900/50 rounded-xl p-4 border border-gray-700 flex flex-col gap-4">
-                <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2">Tools</h2>
-                <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-1 gap-2">
-                    <button id="tool-select" class="mode-button active flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v10a4 4 0 0 1-4 4H4"/><path d="m16 16-4 4 4 4"/><path d="M4 20V10a4 4 0 0 1 4-4h12"/></svg>
-                        <span>Select</span>
-                    </button>
-                    <button id="tool-wire" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 16.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"/><path d="M12 13V2"/><path d="M12 9l3.5-3.5"/><path d="M12 9L8.5 5.5"/><path d="M19 12h-2"/><path d="M5 12H3"/><path d="M19 12l-1.5 1.5"/><path d="M5 12l1.5 1.5"/><path d="M12 22v-2"/></svg>
-                        <span>Wire</span>
-                    </button>
-                    <button id="tool-delete" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2='17'/><line x1='14' y1='11' x2='14' y2='17'/></svg>
-                        <span>Delete</span>
-                    </button>
-                </div>
                 
-                <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2 pt-4">Components</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="pmos">PMOS</div>
-                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="nmos">NMOS</div>
-                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="input">Input</div>
-                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="output">Output</div>
-                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="vdd">VDD</div>
-                    <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="gnd">GND</div>
+                <div class="flex gap-2 border-b border-gray-700 pb-2">
+                    <h2 class="vertical-label text-sm font-bold text-gray-400 tracking-wider p-1">TOOLS</h2>
+                    <div class="grid grid-cols-1 gap-2 flex-grow">
+                        <button id="tool-select" class="mode-button active flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v10a4 4 0 0 1-4 4H4"/><path d="m16 16-4 4 4 4"/><path d="M4 20V10a4 4 0 0 1 4-4h12"/></svg>
+                            <span>Select</span>
+                        </button>
+                        <button id="tool-wire" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 16.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"/><path d="M12 13V2"/><path d="M12 9l3.5-3.5"/><path d="M12 9L8.5 5.5"/><path d="M19 12h-2"/><path d="M5 12H3"/><path d="M19 12l-1.5 1.5"/><path d="M5 12l1.5 1.5"/><path d="M12 22v-2"/></svg>
+                            <span>Wire</span>
+                        </button>
+                        <button id="tool-delete" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2='17'/><line x1='14' y1='11' x2='14' y2='17'/></svg>
+                            <span>Delete</span>
+                        </button>
+                    </div>
                 </div>
 
-                <h2 class="text-lg font-semibold text-center border-b border-gray-600 pb-2 pt-4">Actions</h2>
-                <div class="grid grid-cols-2 gap-2">
-                     <button id="undo-button" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l-3 2.7"/></svg>
-                        <span>Back</span>
-                    </button>
-                     <button id="redo-button" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l3 2.7"/></svg>
-                        <span>Forward</span>
-                    </button>
-                     <button id="copy-button" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        <span>Copy</span>
-                    </button>
-                     <button id="paste-button" class="mode-button flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path></svg>
-                        <span>Paste</span>
-                    </button>
+                <div class="flex gap-2 border-b border-gray-700 pb-2">
+                    <h2 class="vertical-label text-sm font-bold text-gray-400 tracking-wider p-1">COMPONENTS</h2>
+                    <div class="grid grid-cols-2 gap-2 flex-grow">
+                        <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="pmos">PMOS</div>
+                        <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="nmos">NMOS</div>
+                        <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="input">Input</div>
+                        <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="output">Output</div>
+                        <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="vdd">VDD</div>
+                        <div class="palette-item text-center p-3 rounded-lg bg-gray-700 cursor-pointer" data-type="gnd">GND</div>
+                    </div>
                 </div>
-                 <button id="toggle-truth-table" class="col-span-2 mode-button active flex items-center justify-center gap-2 p-2 mt-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-                    <span>Truth Table</span>
-                </button>
+
+                <div class="flex gap-2">
+                     <h2 class="vertical-label text-sm font-bold text-gray-400 tracking-wider p-1">ACTIONS</h2>
+                     <div class="grid grid-cols-2 gap-2 flex-grow">
+                         <!-- MODIFIED: Changed flex to flex-col and reduced gap -->
+                         <button id="undo-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l-3 2.7"/></svg>
+                            <span class="text-xs">Back</span>
+                        </button>
+                         <button id="redo-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l3 2.7"/></svg>
+                            <span class="text-xs">Forward</span>
+                        </button>
+                         <button id="copy-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <span class="text-xs">Copy</span>
+                        </button>
+                         <button id="paste-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path></svg>
+                            <span class="text-xs">Paste</span>
+                        </button>
+                         <button id="toggle-truth-table" class="col-span-2 mode-button active flex items-center justify-center gap-2 p-2 mt-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+                            <span>Truth Table</span>
+                        </button>
+                    </div>
+                </div>
                 
                 <div class="mt-auto space-y-2 pt-4">
                     <div class="grid grid-cols-2 gap-2">
@@ -553,89 +568,55 @@
         }
 
         function runSimulation() {
-            // --- Part 1: Netlist Generation ---
-            // The first step is to figure out which components are connected together.
-            // A "net" is a group of all terminals and joints that are directly wired together.
-            // We use a Breadth-First Search (BFS) algorithm to discover these connections.
-
             const allPoints = [...state.components.flatMap(c => c.terminals), ...state.joints];
-            allPoints.forEach(p => p.net = null); // Reset previous simulation results.
-
+            allPoints.forEach(p => p.net = null); 
             const nets = [];
             let netId = 0;
-            const visited = new Set(); // Keep track of points we've already assigned to a net.
-
-            // Iterate through every possible connection point on the canvas.
+            const visited = new Set(); 
             for (const startPoint of allPoints) {
-                if (visited.has(startPoint)) continue; // If already in a net, skip it.
-
-                // This point is the start of a new, undiscovered net.
+                if (visited.has(startPoint)) continue; 
                 const newNet = new Net(netId++);
-                const queue = [startPoint]; // The queue for our BFS.
+                const queue = [startPoint]; 
                 visited.add(startPoint);
-
-                // Start the BFS traversal.
                 while (queue.length > 0) {
                     const currentPoint = queue.shift();
-                    currentPoint.net = newNet; // Assign this point to our new net.
+                    currentPoint.net = newNet; 
                     newNet.points.add(currentPoint);
-
-                    // Look through all wires to find connections from the current point.
                     for (const wire of state.wires) {
                         let otherPoint = null;
                         if (wire.start === currentPoint) otherPoint = wire.end;
                         if (wire.end === currentPoint) otherPoint = wire.start;
-
-                        // If we found a connected point that we haven't visited, add it to the queue.
                         if (otherPoint && !visited.has(otherPoint)) {
                             visited.add(otherPoint);
                             queue.push(otherPoint);
                         }
                     }
                 }
-                nets.push(newNet); // Add the completed net to our list of all nets.
+                nets.push(newNet); 
             }
-
-            // --- Part 2: Iterative State Solving ---
-            // Because the output of one gate can be the input to another, we can't solve the
-            // circuit in a single pass. We must iterate multiple times until the state of
-            // all nets stabilizes. 20 iterations is more than enough for any reasonable circuit.
             for (let i = 0; i < 20; i++) {
-                let changed = false; // Flag to see if any net changes state in this iteration.
-                const nextStates = new Map(); // Store the calculated next state for each net.
-
-                // For each net, determine what its state should be in the next step.
+                let changed = false; 
+                const nextStates = new Map(); 
                 for (const net of nets) {
-                    let hasVdd = false;       // Is the net directly connected to a HIGH source (VDD, Input)?
-                    let hasGnd = false;       // Is the net directly connected to a LOW source (GND, Input)?
-                    let pullsHigh = false;    // Is a transistor trying to connect this net to a HIGH source?
-                    let pullsLow = false;     // Is a transistor trying to connect this net to a LOW source?
-                    let hasErrorPull = false; // Is a transistor trying to connect this net to an ERROR source?
-
-                    // Analyze every point within the current net.
+                    let hasVdd = false;      
+                    let hasGnd = false;      
+                    let pullsHigh = false;   
+                    let pullsLow = false;    
+                    let hasErrorPull = false;
                     for (const point of net.points) {
                         if (point instanceof Terminal) {
                             const parent = point.parent;
-                            
-                            // Check for direct connections to power sources or inputs. These are the strongest drivers.
                             if (parent.type === 'vdd' || (parent.type === 'input' && parent.state)) hasVdd = true;
                             if (parent.type === 'gnd' || (parent.type === 'input' && !parent.state)) hasGnd = true;
-                            
-                            // Check for connections made through transistors.
                             if (parent instanceof Transistor) {
                                 const gateNet = parent.terminals[2].net;
-                                if (!gateNet) continue; // Skip if the gate isn't connected.
-
+                                if (!gateNet) continue; 
                                 const gateState = gateNet.state;
-                                // Determine if the transistor is conducting based on its type and gate voltage.
                                 const isConducting = (parent.type === 'pmos' && gateState === STATE_LOW) || (parent.type === 'nmos' && gateState === STATE_HIGH);
-
                                 if (isConducting) {
-                                    // Find what the other side of the transistor (source/drain) is connected to.
                                     const otherTerm = point.name === 'source' ? parent.terminals[1] : parent.terminals[0];
                                     const otherNet = otherTerm.net;
                                     if (otherNet) {
-                                        // The other side's state determines what this transistor is trying to do to our current net.
                                         if (otherNet.state === STATE_HIGH) pullsHigh = true;
                                         else if (otherNet.state === STATE_LOW) pullsLow = true;
                                         else if (otherNet.state === STATE_ERROR) hasErrorPull = true;
@@ -644,45 +625,34 @@
                             }
                         }
                     }
-                    
-                    // --- Part 3: State Determination Logic ---
-                    // Based on the flags we've set, determine the final state of this net.
-                    let newState = STATE_FLOAT; // Default to floating (high impedance).
-
-                    if (hasVdd && hasGnd) { // Direct short to both VDD and GND.
+                    let newState = STATE_FLOAT; 
+                    if (hasVdd && hasGnd) { 
                         newState = STATE_ERROR;
-                    } else if (hasVdd) { // Direct connection to VDD is the strongest driver.
+                    } else if (hasVdd) { 
                         newState = STATE_HIGH;
-                    } else if (hasGnd) { // Direct connection to GND is the second strongest.
+                    } else if (hasGnd) { 
                         newState = STATE_LOW;
-                    } else if (hasErrorPull) { // Propagate any error states.
+                    } else if (hasErrorPull) { 
                         newState = STATE_ERROR;
-                    } else if (pullsHigh && pullsLow) { // A transistor is pulling high AND another is pulling low. This is a short circuit.
+                    } else if (pullsHigh && pullsLow) { 
                         newState = STATE_ERROR;
-                    } else if (pullsHigh) { // Only being pulled high.
+                    } else if (pullsHigh) { 
                         newState = STATE_HIGH;
-                    } else if (pullsLow) { // Only being pulled low.
+                    } else if (pullsLow) { 
                         newState = STATE_LOW;
                     }
-
-                    // Model capacitance: if a net is not being driven by anything, it should hold its previous state.
                     if (newState === STATE_FLOAT && (net.state === STATE_HIGH || net.state === STATE_LOW)) {
                         newState = net.state;
                     }
-                    
                     nextStates.set(net, newState);
                 }
-
-                // Apply the calculated next states to all nets.
                 for (const net of nets) {
                     const newState = nextStates.get(net);
                     if (net.state !== newState) {
                         net.state = newState;
-                        changed = true; // Mark that the circuit has not yet stabilized.
+                        changed = true; 
                     }
                 }
-
-                // If no nets changed state during this entire iteration, the circuit is stable and we can stop.
                 if (!changed) break;
             }
         }
@@ -709,13 +679,12 @@
                 tableHtml += '<tr>';
                 for (let j = 0; j < inputs.length; j++) {
                     const val = (i >> (inputs.length - 1 - j)) & 1;
-                    inputs[j].state = !!val; // Modify main state for this row's simulation
+                    inputs[j].state = !!val; 
                     tableHtml += `<td class="${val ? 'state-high' : 'state-low'}">${val}</td>`;
                 }
 
-                runSimulation(); // Run simulation on the main state
+                runSimulation(); 
 
-                // Read outputs directly from the main state
                 outputs.forEach(o => {
                     const netState = o.terminals[0].net ? o.terminals[0].net.state : STATE_FLOAT;
                     let val = '?';
@@ -731,9 +700,8 @@
             tableHtml += '</tbody></table>';
             truthTableContainer.innerHTML = tableHtml;
 
-            // Restore original state to the main canvas
             inputs.forEach((input, i) => input.state = originalInputStates[i]);
-            runSimulation(); // Run simulation one last time to update visuals
+            runSimulation(); 
         }
 
         // --- DRAWING LOGIC ---
@@ -755,11 +723,11 @@
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
 
-            if (dx > dy) { // Prefer H-V-H routing
+            if (dx > dy) { 
                 const midX = snapToGrid((p1.x + p2.x) / 2);
                 ctx.lineTo(midX, p1.y);
                 ctx.lineTo(midX, p2.y);
-            } else { // Prefer V-H-V routing
+            } else { 
                 const midY = snapToGrid((p1.y + p2.y) / 2);
                 ctx.lineTo(p1.x, midY);
                 ctx.lineTo(p2.x, midY);
@@ -799,8 +767,8 @@
 
             if (state.selectionBox) {
                 if (state.mode === 'delete') {
-                    ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; // red-500 with opacity
-                    ctx.strokeStyle = '#ef4444'; // red-500
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; 
+                    ctx.strokeStyle = '#ef4444'; 
                 } else {
                     ctx.fillStyle = colors.selection;
                     ctx.strokeStyle = colors.terminalHighlight;
@@ -886,7 +854,7 @@
                     if (distToSegment(pos, wire.start, wire.end) < 5) {
                         state.wires.splice(i, 1);
                         itemClicked = true;
-                        break; // Only delete one wire per click
+                        break; 
                     }
                 }
                 if (!itemClicked && comp) {
@@ -899,7 +867,6 @@
                 if (itemClicked) {
                     updateCircuit();
                 } else {
-                    // Start box selection for delete
                     state.dragStartX = pos.x;
                     state.dragStartY = pos.y;
                     state.dragging = true;
@@ -985,7 +952,7 @@
                     if (distMoved < 5 && selected.length === 1 && selected[0] instanceof IOComponent && selected[0].type === 'input') {
                         selected[0].toggle();
                     } else if (distMoved > 5) {
-                        updateCircuit(); // Save move to history
+                        updateCircuit(); 
                     }
                 }
             }
@@ -1027,7 +994,7 @@
         
         canvas.addEventListener('mouseleave', () => {
              if (state.dragging && !state.selectionBox) {
-                 updateCircuit(); // Save state if dragging off canvas
+                 updateCircuit(); 
              }
              state.dragging = false;
              state.wiringStartPoint = null;
