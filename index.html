@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMOS Simulator v3.1</title>
+    <title>CMOS Simulator v3.3</title>
 
     <!--
-        Project: CMOS Simulator v3.1
+        Project: CMOS Simulator v3.3
         Generated with: Google Gemini (Version: 2.5 Pro, Reasoning, math & code)
         Reference: https://gemini.google.com/
         Date of Final Version: August 15, 2025
         Development History: This application was built iteratively.
-        v2.9-v3.1 Change: Fixed left column not showing properly on MacPro screens.
+        v2.9-v3.3 Change: Fixed left column not showing properly on MacPro screens.
         v2.3-v2.8 Change: UI and visual change.
         v2.2 Change: Reworked the simulation engine to remove complex priority logic.
     -->
@@ -60,6 +60,20 @@
             text-align: center;
             white-space: nowrap;
         }
+        .action-tab-button {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 2px solid transparent;
+        }
+        .action-tab-button.active {
+            color: #60a5fa; /* blue-400 */
+            border-bottom-color: #60a5fa;
+        }
+        .action-tab-panel {
+            display: none;
+        }
+        .action-tab-panel.active {
+            display: grid;
+        }
         .message-box {
             transition: opacity 0.5s, transform 0.5s;
         }
@@ -99,7 +113,7 @@
                 <div class="text-xl font-bold text-white">Coe College</div>
             </div>
             <div class="text-center">
-                <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v3.1</h1>
+                <h1 class="text-2xl md:text-3xl font-bold text-white">CMOS Simulator v3.3</h1>
                 <p class="text-gray-400 mt-1 text-sm md:text-base">Drag components, wire them up, and see the truth table update in real-time!</p>
             </div>
             <div class="text-right">
@@ -142,39 +156,43 @@
                     </div>
                 </div>
 
-                <div class="flex gap-2">
-                     <h2 class="vertical-label text-sm font-bold text-gray-400 tracking-wider p-1">ACTIONS</h2>
-                     <div class="grid grid-cols-2 gap-2 flex-grow">
-                         <!-- MODIFIED: Changed flex to flex-col and reduced gap -->
-                         <button id="undo-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l-3 2.7"/></svg>
-                            <span class="text-xs">Back</span>
-                        </button>
-                         <button id="redo-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l3 2.7"/></svg>
-                            <span class="text-xs">Forward</span>
-                        </button>
-                         <button id="copy-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            <span class="text-xs">Copy</span>
-                        </button>
-                         <button id="paste-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path></svg>
-                            <span class="text-xs">Paste</span>
-                        </button>
-                         <button id="toggle-truth-table" class="col-span-2 mode-button active flex items-center justify-center gap-2 p-2 mt-2 rounded-lg bg-gray-700 hover:bg-gray-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-                            <span>Truth Table</span>
-                        </button>
+                <!-- MODIFIED: Actions section updated -->
+                <div class="flex-grow flex flex-col">
+                    <nav class="flex border-b border-gray-600">
+                        <button class="action-tab-button active w-1/2 py-1 text-center font-medium text-sm" data-tab="manage">Manage</button>
+                        <button class="action-tab-button w-1/2 py-1 text-center font-medium text-sm" data-tab="edit">Edit</button>
+                    </nav>
+                    <div class="pt-2 flex-grow">
+                        <div id="panel-edit" class="action-tab-panel grid-cols-2 gap-2">
+                             <button id="undo-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l-3 2.7"/></svg>
+                                <span class="text-xs">Back</span>
+                            </button>
+                             <button id="redo-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l3 2.7"/></svg>
+                                <span class="text-xs">Forward</span>
+                            </button>
+                             <button id="copy-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span class="text-xs">Copy</span>
+                            </button>
+                             <button id="paste-button" class="mode-button flex flex-col items-center justify-center gap-1 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path></svg>
+                                <span class="text-xs">Paste</span>
+                            </button>
+                        </div>
+                        <div id="panel-manage" class="action-tab-panel active grid-cols-1 gap-2">
+                             <button id="toggle-truth-table" class="mode-button active flex items-center justify-center gap-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+                                <span>Truth Table</span>
+                            </button>
+                             <div class="grid grid-cols-2 gap-2 pt-2">
+                                 <button id="save-button" class="w-full p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white font-semibold">Save</button>
+                                 <button id="load-button" class="w-full p-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-semibold">Load</button>
+                            </div>
+                            <button id="clear-canvas" class="w-full p-2 rounded-lg bg-red-800 hover:bg-red-700 text-white font-semibold">Clear All</button>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="mt-auto space-y-2 pt-4">
-                    <div class="grid grid-cols-2 gap-2">
-                         <button id="save-button" class="w-full p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white font-semibold">Save</button>
-                         <button id="load-button" class="w-full p-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-semibold">Load</button>
-                    </div>
-                    <button id="clear-canvas" class="w-full p-2 rounded-lg bg-red-800 hover:bg-red-700 text-white font-semibold">Clear All</button>
                 </div>
                 <input type="file" id="file-input" class="hidden" accept=".json">
             </div>
@@ -220,6 +238,8 @@
         const truthTableContainer = document.getElementById('truth-table-container');
         const truthTablePanel = document.getElementById('truth-table-panel');
         const toggleTruthTableButton = document.getElementById('toggle-truth-table');
+        const actionTabButtons = document.querySelectorAll('.action-tab-button');
+        const actionTabPanels = document.querySelectorAll('.action-tab-panel');
 
         // --- GLOBAL STATE ---
         const GRID_SIZE = 20;
@@ -1045,6 +1065,17 @@
         toggleTruthTableButton.addEventListener('click', () => {
             truthTablePanel.classList.toggle('hidden');
             toggleTruthTableButton.classList.toggle('active');
+        });
+
+        actionTabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+                actionTabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                actionTabPanels.forEach(panel => {
+                    panel.classList.toggle('active', panel.id === `panel-${tab}`);
+                });
+            });
         });
 
         // --- HISTORY (UNDO/REDO) LOGIC ---
