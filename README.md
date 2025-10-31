@@ -23,12 +23,15 @@ The truth table will be updated in real-time. Right now output (O1) is floating 
 ### Step 2: select **Wire**, then drag and connect all dots or wires.
 
 ![GUI](/../main/graph/5-0.png)
+
 Select wire.
 
 ![GUI](/../main/graph/5.png)
+
 Connect wires.
 
 ![GUI](/../main/graph/6.png)
+
 Truth table updated in real-time.
 
 ![GUI](/../main/graph/8.png)
@@ -39,11 +42,12 @@ Above is a fully built inverter.
 + For wire connection, use your left click to point, click, hold, drag and connect.
 
 + Right now it only works for CMOS simulation. Not for PMOS/NMOS only.
-
++ You can actually save and load your design locally (or clear all), at the manage tab.
 + Edit tool can copy/paste, or go back/forward with operations.
+  
 ![GUI](/../main/graph/7.png)
 
-+ You can actually save and load your design locally (or clear all), at the manage tab.
+
 
 
 
