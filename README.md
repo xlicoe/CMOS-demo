@@ -16,7 +16,8 @@ https://xlicoe.github.io/CMOS-demo/
 
 Above is the classic inverter (NOT gate) layout.
 
-The truth table will be updated in real-time. Right now output (O1) is floating since no connection. 
+The truth table will be updated in real-time. Right now output (O1) is floating since there are no connection. 
+
 ![GUI](/../main/graph/4.png)
 
 ### Step 2: select **Wire**, then drag and connect all dots or wires.
