@@ -1,0 +1,587 @@
+{
+  "components": [
+    {
+      "id": 0,
+      "type": "pmos",
+      "x": 180,
+      "y": 200,
+      "label": null,
+      "terminals": [
+        {
+          "id": 1,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 2,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 3,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "nmos",
+      "x": 180,
+      "y": 300,
+      "label": null,
+      "terminals": [
+        {
+          "id": 5,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 6,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 7,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "pmos",
+      "x": 180,
+      "y": 640,
+      "label": null,
+      "terminals": [
+        {
+          "id": 9,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 10,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 11,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "nmos",
+      "x": 180,
+      "y": 760,
+      "label": null,
+      "terminals": [
+        {
+          "id": 13,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 14,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 15,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "type": "pmos",
+      "x": 580,
+      "y": 220,
+      "label": null,
+      "terminals": [
+        {
+          "id": 17,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 18,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 19,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "type": "nmos",
+      "x": 620,
+      "y": 460,
+      "label": null,
+      "terminals": [
+        {
+          "id": 29,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 30,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 31,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "type": "nmos",
+      "x": 540,
+      "y": 460,
+      "label": null,
+      "terminals": [
+        {
+          "id": 33,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 34,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 35,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "type": "pmos",
+      "x": 840,
+      "y": 300,
+      "label": null,
+      "terminals": [
+        {
+          "id": 37,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 38,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 39,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "type": "nmos",
+      "x": 840,
+      "y": 420,
+      "label": null,
+      "terminals": [
+        {
+          "id": 41,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 42,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 43,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "type": "input",
+      "x": 60,
+      "y": 240,
+      "label": "A",
+      "state": true,
+      "terminals": [
+        {
+          "id": 45,
+          "name": "term",
+          "offsetX": 30,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "type": "input",
+      "x": 80,
+      "y": 700,
+      "label": "B",
+      "state": false,
+      "terminals": [
+        {
+          "id": 47,
+          "name": "term",
+          "offsetX": 30,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "vdd",
+      "x": 180,
+      "y": 140,
+      "label": null,
+      "terminals": [
+        {
+          "id": 51,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "type": "vdd",
+      "x": 580,
+      "y": 160,
+      "label": null,
+      "terminals": [
+        {
+          "id": 53,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "type": "vdd",
+      "x": 840,
+      "y": 220,
+      "label": null,
+      "terminals": [
+        {
+          "id": 55,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "type": "gnd",
+      "x": 180,
+      "y": 380,
+      "label": null,
+      "terminals": [
+        {
+          "id": 57,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "type": "gnd",
+      "x": 580,
+      "y": 620,
+      "label": null,
+      "terminals": [
+        {
+          "id": 59,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "type": "gnd",
+      "x": 840,
+      "y": 560,
+      "label": null,
+      "terminals": [
+        {
+          "id": 61,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "type": "gnd",
+      "x": 180,
+      "y": 840,
+      "label": null,
+      "terminals": [
+        {
+          "id": 63,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "type": "vdd",
+      "x": 180,
+      "y": 580,
+      "label": null,
+      "terminals": [
+        {
+          "id": 65,
+          "name": "out",
+          "offsetX": 0,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "type": "pmos",
+      "x": 580,
+      "y": 300,
+      "label": null,
+      "terminals": [
+        {
+          "id": 75,
+          "name": "source",
+          "offsetX": 0,
+          "offsetY": -30
+        },
+        {
+          "id": 76,
+          "name": "drain",
+          "offsetX": 0,
+          "offsetY": 30
+        },
+        {
+          "id": 77,
+          "name": "gate",
+          "offsetX": -20,
+          "offsetY": 0
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "type": "output",
+      "x": 920,
+      "y": 360,
+      "label": "Out1",
+      "terminals": [
+        {
+          "id": 79,
+          "name": "term",
+          "offsetX": -30,
+          "offsetY": 0
+        }
+      ]
+    }
+  ],
+  "joints": [
+    {
+      "id": 66,
+      "x": 580,
+      "y": 380
+    },
+    {
+      "id": 68,
+      "x": 180,
+      "y": 240
+    },
+    {
+      "id": 69,
+      "x": 180,
+      "y": 700
+    },
+    {
+      "id": 80,
+      "x": 840,
+      "y": 360
+    }
+  ],
+  "wires": [
+    {
+      "startId": 14,
+      "endId": 63
+    },
+    {
+      "startId": 65,
+      "endId": 9
+    },
+    {
+      "startId": 11,
+      "endId": 47
+    },
+    {
+      "startId": 15,
+      "endId": 47
+    },
+    {
+      "startId": 6,
+      "endId": 57
+    },
+    {
+      "startId": 7,
+      "endId": 45
+    },
+    {
+      "startId": 3,
+      "endId": 45
+    },
+    {
+      "startId": 53,
+      "endId": 17
+    },
+    {
+      "startId": 34,
+      "endId": 59
+    },
+    {
+      "startId": 30,
+      "endId": 59
+    },
+    {
+      "startId": 55,
+      "endId": 37
+    },
+    {
+      "startId": 42,
+      "endId": 61
+    },
+    {
+      "startId": 66,
+      "endId": 33
+    },
+    {
+      "startId": 39,
+      "endId": 66
+    },
+    {
+      "startId": 43,
+      "endId": 66
+    },
+    {
+      "startId": 2,
+      "endId": 68
+    },
+    {
+      "startId": 68,
+      "endId": 5
+    },
+    {
+      "startId": 19,
+      "endId": 68
+    },
+    {
+      "startId": 35,
+      "endId": 68
+    },
+    {
+      "startId": 10,
+      "endId": 69
+    },
+    {
+      "startId": 69,
+      "endId": 13
+    },
+    {
+      "startId": 31,
+      "endId": 69
+    },
+    {
+      "startId": 76,
+      "endId": 66
+    },
+    {
+      "startId": 18,
+      "endId": 75
+    },
+    {
+      "startId": 77,
+      "endId": 69
+    },
+    {
+      "startId": 29,
+      "endId": 66
+    },
+    {
+      "startId": 38,
+      "endId": 80
+    },
+    {
+      "startId": 80,
+      "endId": 41
+    },
+    {
+      "startId": 79,
+      "endId": 80
+    },
+    {
+      "startId": 51,
+      "endId": 1
+    }
+  ],
+  "nextInputLabel": "C",
+  "nextId": 81
+}
