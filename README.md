@@ -2,7 +2,7 @@
 
 CMOS simulator for ENR325
 
-https://xlicoe.github.io/CMOS-demo/
+To try out, click here: https://xlicoe.github.io/CMOS-demo/
 
 **The state changes across wires, especially in the floating state, are not realistic.**
 
