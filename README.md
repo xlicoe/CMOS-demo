@@ -22,6 +22,8 @@ The truth table will be updated in real-time. Right now output (O1) is floating 
 
 ### Step 2: select **Wire**, then drag and connect all dots or wires.
 
+![GUI](/../main/graph/how_to_wire.png)
+
 Select wire:
 
 ![GUI](/../main/graph/5-0.png)
