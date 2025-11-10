@@ -24,15 +24,17 @@ The truth table will be updated in real-time. Right now output (O1) is floating 
 
 ![GUI](/../main/graph/how_to_wire.png)
 
-Select wire:
+Again, it's 
+
+2.1) Select wire:
 
 ![GUI](/../main/graph/5-0.png)
 
-Connect wires:
+2.2) Connect wires:
 
 ![GUI](/../main/graph/5.png)
 
-Truth table updated in real-time:
+2.3) Truth table updated in real-time:
 
 ![GUI](/../main/graph/6.png)
 
